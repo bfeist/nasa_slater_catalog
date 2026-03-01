@@ -60,11 +60,20 @@ export function shotlistPdfUrl(filename: string): string {
   return `${BASE}/shotlist-pdf/${encodeURIComponent(filename)}`;
 }
 
-/** Get the streaming URL for a given file ID, optionally starting at a seek position */
-export function videoStreamUrl(fileId: number, startSecs?: number): string {
+/** Get the streaming URL for a given file ID with an explicit streamId for heartbeat tracking */
+export function videoStreamUrl(fileId: number, streamId: string, startSecs?: number): string {
   const base = `${BASE}/video/${fileId}/stream`;
-  if (startSecs && startSecs > 0) {
-    return `${base}?start=${startSecs.toFixed(1)}`;
-  }
-  return base;
+  const params = new URLSearchParams({ streamId });
+  if (startSecs && startSecs > 0) params.set("start", startSecs.toFixed(1));
+  return `${base}?${params.toString()}`;
+}
+
+/** Heartbeat — call every few seconds while a stream is active */
+export async function videoHeartbeat(streamId: string): Promise<void> {
+  await fetch(`${BASE}/video/heartbeat?streamId=${encodeURIComponent(streamId)}`);
+}
+
+/** Explicit stop — call when the player unmounts or seeks away from a stream */
+export async function videoStop(streamId: string): Promise<void> {
+  await fetch(`${BASE}/video/stop?streamId=${encodeURIComponent(streamId)}`, { method: "POST" });
 }

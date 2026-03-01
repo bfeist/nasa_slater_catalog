@@ -22,7 +22,7 @@ export default defineConfig({
     port: 9300,
     proxy: {
       "/api": {
-        target: "http://127.0.0.1:3001",
+        target: "http://127.0.0.1:9301",
         changeOrigin: true,
       },
     },

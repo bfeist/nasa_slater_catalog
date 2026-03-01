@@ -1,6 +1,5 @@
 import type { JSX } from "react";
 import type { FileMatch, FfprobeMetadata } from "../types";
-import { videoStreamUrl } from "../api/client";
 import {
   formatBytes,
   formatDuration,
@@ -108,9 +107,6 @@ export default function FileInfoCard({ file, probe, onPlay }: FileInfoCardProps)
       )}
 
       {!probe && <p className="muted">No ffprobe metadata available for this file.</p>}
-
-      {/* Hidden but available: streaming URL for programmatic use */}
-      <input type="hidden" data-stream-url={videoStreamUrl(file.file_id)} />
     </div>
   );
 }

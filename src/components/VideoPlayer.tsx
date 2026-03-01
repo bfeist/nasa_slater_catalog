@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type JSX } from "react";
-import { videoStreamUrl } from "../api/client";
+import { videoStreamUrl, videoHeartbeat, videoStop } from "../api/client";
 import { formatDuration } from "../utils/format";
 
 interface VideoPlayerProps {
@@ -7,6 +7,13 @@ interface VideoPlayerProps {
   filename: string;
   durationSecs: number | null;
   onClose: () => void;
+}
+
+// Each seek generates a fresh StreamKey so the server gets a new registration
+// and the heartbeat loop restarts cleanly around the new ffmpeg process.
+interface StreamKey {
+  offset: number;
+  id: string;
 }
 
 export default function VideoPlayer({
@@ -18,19 +25,22 @@ export default function VideoPlayer({
   const videoRef = useRef<HTMLVideoElement>(null);
   const scrubberRef = useRef<HTMLDivElement>(null);
 
-  // Seek offset: the ffmpeg -ss value currently in use
-  const [seekOffset, setSeekOffset] = useState(0);
-  // Elapsed time reported by the <video> element (since the current seek offset)
+  // Atomic seek-offset + stream-id so both update in one setState call
+  const [streamKey, setStreamKey] = useState<StreamKey>(() => ({
+    offset: 0,
+    id: crypto.randomUUID(),
+  }));
+  // Elapsed time reported by the <video> element (since current seek offset)
   const [videoTime, setVideoTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   // While dragging, show the preview time; null means not dragging
   const [dragTime, setDragTime] = useState<number | null>(null);
 
   const duration = durationSecs ?? 0;
-  const currentTime = seekOffset + videoTime;
+  const currentTime = streamKey.offset + videoTime;
 
-  // Build the stream URL with the current seek offset
-  const streamUrl = videoStreamUrl(fileId, seekOffset);
+  // Build the stream URL with the current seek offset and stream id
+  const streamUrl = videoStreamUrl(fileId, streamKey.id, streamKey.offset);
 
   // Update videoTime from the <video> element's timeupdate event
   useEffect(() => {
@@ -41,7 +51,9 @@ export default function VideoPlayer({
     return () => vid.removeEventListener("timeupdate", onTimeUpdate);
   }, []);
 
-  // When seekOffset changes, reset videoTime and reload
+  // When the stream key changes (seek or initial mount), reset videoTime and reload.
+  // Cleanup sends an explicit stop so the previous ffmpeg is killed immediately
+  // rather than waiting for the heartbeat timeout.
   useEffect(() => {
     setVideoTime(0);
     const vid = videoRef.current;
@@ -50,7 +62,21 @@ export default function VideoPlayer({
       if (isPlaying) vid.play().catch(() => {});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [seekOffset]);
+  }, [streamKey]);
+
+  // Heartbeat — keeps the server-side watchdog alive while the player is open.
+  // Sends an immediate ping, then one every 5 s.
+  // Cleanup fires on seek (new streamKey) and on unmount, sending an explicit
+  // stop so the server kills ffmpeg right away instead of waiting for timeout.
+  useEffect(() => {
+    const { id } = streamKey;
+    videoHeartbeat(id).catch(() => {});
+    const interval = setInterval(() => videoHeartbeat(id).catch(() => {}), 5_000);
+    return () => {
+      clearInterval(interval);
+      videoStop(id).catch(() => {});
+    };
+  }, [streamKey]);
 
   const togglePlay = useCallback(() => {
     const vid = videoRef.current;
@@ -76,11 +102,13 @@ export default function VideoPlayer({
     [duration]
   );
 
+  // Commit a seek: generate a new stream key so both offset and streamId update
+  // atomically, giving the new ffmpeg process a fresh registration on the server.
   const commitSeek = useCallback(
     (time: number) => {
       setDragTime(null);
       const clamped = Math.max(0, Math.min(duration, time));
-      setSeekOffset(clamped);
+      setStreamKey({ offset: clamped, id: crypto.randomUUID() });
     },
     [duration]
   );

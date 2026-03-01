@@ -11,6 +11,64 @@ import { config } from "../config.js";
 
 const router = Router();
 
+// ---------------------------------------------------------------------------
+// Stream registry — tracks active ffmpeg processes by client-supplied streamId.
+// Clients must send periodic heartbeats; if none arrive within the timeout the
+// process is killed so it cannot hang indefinitely.
+// ---------------------------------------------------------------------------
+
+const HEARTBEAT_TIMEOUT_MS = 15_000; // kill if silent for 15 s
+
+interface ActiveStream {
+  ffmpeg: ChildProcess;
+  watchdog: ReturnType<typeof setTimeout>;
+}
+
+const activeStreams = new Map<string, ActiveStream>();
+
+function deregisterStream(streamId: string, reason: string): void {
+  const s = activeStreams.get(streamId);
+  if (!s) return;
+  clearTimeout(s.watchdog);
+  activeStreams.delete(streamId);
+  console.log(`[video-stream] Killing stream ${streamId}: ${reason}`);
+  try {
+    s.ffmpeg.kill("SIGTERM");
+  } catch {
+    // already dead
+  }
+}
+
+function resetWatchdog(streamId: string): void {
+  const s = activeStreams.get(streamId);
+  if (!s) return;
+  clearTimeout(s.watchdog);
+  s.watchdog = setTimeout(
+    () => deregisterStream(streamId, "heartbeat timeout"),
+    HEARTBEAT_TIMEOUT_MS
+  );
+}
+
+// ---- GET /api/video/heartbeat?streamId=... ----
+router.get("/heartbeat", (req, res) => {
+  const streamId = req.query.streamId as string | undefined;
+  if (!streamId || !activeStreams.has(streamId)) {
+    res.status(404).json({ error: "Unknown streamId" });
+    return;
+  }
+  resetWatchdog(streamId);
+  res.json({ ok: true });
+});
+
+// ---- POST /api/video/stop?streamId=... ----
+router.post("/stop", (req, res) => {
+  const streamId = req.query.streamId as string | undefined;
+  if (streamId) {
+    deregisterStream(streamId, "client stop");
+  }
+  res.json({ ok: true });
+});
+
 // ---- GET /api/video/:file_id/info ----
 router.get("/:file_id/info", (req, res) => {
   const d = getDb();
@@ -53,10 +111,11 @@ router.get("/:file_id/stream", (req, res) => {
     | undefined;
 
   const startSecs = parseFloat((req.query.start as string) ?? "0") || 0;
+  const streamId = (req.query.streamId as string | undefined) ?? "";
 
   const codec = probe?.video_codec ?? "unknown";
   console.log(
-    `[video-stream] Transcoding ${fullPath} (${codec}) → mp4/h264 + watermark, start=${startSecs}s`
+    `[video-stream] Transcoding ${fullPath} (${codec}) → mp4/h264 + watermark, start=${startSecs}s, streamId=${streamId || "(none)"}`
   );
 
   res.writeHead(200, {
@@ -69,6 +128,7 @@ router.get("/:file_id/stream", (req, res) => {
   const fontEscaped = config.watermarkFontPath.replace(/:/g, "\\:");
 
   const watermark =
+    `scale=1280:-2:force_original_aspect_ratio=decrease,format=yuv420p,` +
     `drawtext=fontfile='${fontEscaped}'` +
     ":text='STEPHEN SLATER PRODUCTIONS'" +
     ":fontsize=h/12" +
@@ -91,23 +151,43 @@ router.get("/:file_id/stream", (req, res) => {
     "-vf",
     watermark,
     "-c:v",
-    "libx264",
+    "h264_nvenc",
     "-preset",
-    "ultrafast",
-    "-crf",
-    "23",
+    "fast",
     "-c:a",
     "aac",
     "-ac",
     "2",
     "-b:a",
-    "128k",
+    "64k",
     "-movflags",
     "frag_keyframe+empty_moov+default_base_moof",
     "-f",
     "mp4",
     "pipe:1",
   ]);
+
+  // Register stream so heartbeats and explicit stops can reach this process.
+  // Start watchdog immediately; first heartbeat must arrive within the timeout.
+  if (streamId) {
+    const watchdog = setTimeout(
+      () => deregisterStream(streamId, "heartbeat timeout"),
+      HEARTBEAT_TIMEOUT_MS
+    );
+    activeStreams.set(streamId, { ffmpeg, watchdog });
+  }
+
+  const cleanup = (reason: string) => {
+    if (streamId) {
+      deregisterStream(streamId, reason);
+    } else {
+      try {
+        ffmpeg.kill("SIGTERM");
+      } catch {
+        // already dead
+      }
+    }
+  };
 
   ffmpeg.stdout?.pipe(res);
   ffmpeg.stderr?.on("data", (data: Buffer) => {
@@ -129,14 +209,22 @@ router.get("/:file_id/stream", (req, res) => {
     if (!res.headersSent) {
       res.status(500).send("ffmpeg not available");
     }
+    cleanup("ffmpeg error");
   });
   ffmpeg.on("close", () => {
     res.end();
+    if (streamId) {
+      const s = activeStreams.get(streamId);
+      if (s) {
+        clearTimeout(s.watchdog);
+        activeStreams.delete(streamId);
+      }
+    }
   });
 
-  // Kill ffmpeg if client disconnects
+  // Kill ffmpeg if client disconnects (TCP close) — belt-and-suspenders alongside heartbeat
   req.on("close", () => {
-    ffmpeg.kill("SIGTERM");
+    cleanup("client disconnected");
   });
 });
 
