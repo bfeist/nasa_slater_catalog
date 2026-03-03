@@ -106,13 +106,18 @@ router.get("/:identifier", (req, res) => {
       .all(...fileIds);
   }
 
-  // Discovery shotlist entries
+  // Discovery shotlist entries — look up by tape_number via transfers so that
+  // all identifiers on a tape get the shotlist, not just the one stored in
+  // the identifier column of discovery_shotlist.
   const discoveryEntries = d
     .prepare(
-      `SELECT * FROM discovery_shotlist
-       WHERE identifier LIKE ? OR identifier LIKE ?`
+      `SELECT ds.*
+       FROM discovery_shotlist ds
+       JOIN transfers t ON CAST(t.tape_number AS INTEGER) = ds.tape_number
+       WHERE t.reel_identifier = ?
+         AND t.transfer_type = 'discovery_capture'`
     )
-    .all(`%${identifier}%`, `%${identifier.replace(/^FR-/, "")}%`);
+    .all(identifier);
 
   // NARA citations (table added by 1b_ingest_first_steps.py migration)
   let naraCitations: unknown[] = [];

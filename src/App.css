@@ -633,41 +633,6 @@ select {
 }
 
 /* --- Future stubs --- */
-/* --- NARA citations section --- */
-.nara-citations-section {
-  margin-bottom: 1.5rem;
-}
-
-.nara-citation-list {
-  list-style: none;
-  padding: 0;
-  margin: 0.5rem 0 0;
-}
-
-.nara-citation-list li {
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
-  padding: 0.2rem 0;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 0.9em;
-}
-
-.nara-citation-list li:last-child {
-  border-bottom: none;
-}
-
-.citation-type-badge {
-  display: inline-block;
-  background: #e8f0fe;
-  color: #1a56db;
-  padding: 0.1em 0.45em;
-  border-radius: 2px;
-  font-size: 0.78em;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
 /* --- External file refs section --- */
 .ext-refs-section {
   margin-bottom: 1.5rem;
@@ -698,6 +663,41 @@ select {
   font-size: 0.8em;
   text-transform: capitalize;
   margin-right: 0.2em;
+
+  /* --- NARA citations section --- */
+  .nara-citations-section {
+    margin-bottom: 1.5rem;
+  }
+
+  .nara-citation-list {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 0;
+  }
+
+  .nara-citation-list li {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    padding: 0.2rem 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.9em;
+  }
+
+  .nara-citation-list li:last-child {
+    border-bottom: none;
+  }
+
+  .citation-type-badge {
+    display: inline-block;
+    background: #e8f0fe;
+    color: #1a56db;
+    padding: 0.1em 0.45em;
+    border-radius: 2px;
+    font-size: 0.78em;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
 }
 
 /* --- Notes block --- */

@@ -597,6 +597,87 @@ def ingest_discovery_shotlist(wb, db: sqlite3.Connection) -> tuple[int, int]:
     return row_count, tc_count
 
 
+# Matches FR-9537, FR_9537, FR9537 (3-5 digit number) inside free-text fields.
+_FR_IN_TEXT = re.compile(r"\bFR[-_]?(\d{3,5})\b", re.IGNORECASE)
+
+
+def ingest_discovery_shotlist_transfers(db: sqlite3.Connection) -> int:
+    """Create discovery_capture transfers from the discovery_shotlist table.
+
+    The Master List tab only records a Discovery tape number when the cataloguer
+    linked the film roll explicitly.  Two additional sources are mined here:
+
+    Source A — discovery_shotlist.identifier already names an FR roll, but no
+               transfer was ingested from the Master List (the Master List row
+               had a blank Discovery Tape column).  We trust the shotlist table's
+               identifier as authoritative.
+
+    Source B — An FR number is referenced inside shotlist_raw free text
+               (e.g. "FR-9537", "FR9537", "FR_9537") but no transfer exists
+               for that FR + tape combination.  Only identifiers that already
+               exist in film_rolls are linked.
+
+    Returns the number of new transfers inserted.
+    """
+    known_fr: set[str] = {
+        row[0]
+        for row in db.execute("SELECT identifier FROM film_rolls WHERE id_prefix='FR'")
+    }
+
+    # Pre-load existing discovery_capture transfers to avoid duplicates.
+    existing: set[tuple[str, str]] = {
+        (row[0], row[1])
+        for row in db.execute(
+            "SELECT reel_identifier, tape_number FROM transfers "
+            "WHERE transfer_type='discovery_capture'"
+        )
+    }
+
+    inserted = 0
+    rows = db.execute(
+        "SELECT identifier, tape_number, shotlist_raw FROM discovery_shotlist"
+    ).fetchall()
+
+    for ident, tape, raw in rows:
+        if tape is None:
+            continue
+
+        tape_str = str(tape)
+        fn, fp = tape_path(tape)
+        candidates: set[str] = set()
+
+        # Source A: identifier column names a known FR roll.
+        if ident and re.match(r"^FR-", str(ident)) and ident in known_fr:
+            candidates.add(ident)
+
+        # Source B: FR numbers embedded in shotlist_raw text.
+        if raw:
+            for num in _FR_IN_TEXT.findall(raw):
+                for candidate in (f"FR-{num}", f"FR-{int(num):04d}", f"FR-{int(num)}"):
+                    if candidate in known_fr:
+                        candidates.add(candidate)
+                        break
+
+        for fr_id in candidates:
+            if (fr_id, tape_str) not in existing:
+                source = (
+                    "discovery_shotlist_id"
+                    if (ident and fr_id == ident)
+                    else "discovery_shotlist_scan"
+                )
+                db.execute(
+                    "INSERT INTO transfers "
+                    "(reel_identifier, transfer_type, source_tab, tape_number, filename, file_path) "
+                    "VALUES (?,?,?,?,?,?)",
+                    (fr_id, "discovery_capture", source, tape_str, fn, fp),
+                )
+                existing.add((fr_id, tape_str))
+                inserted += 1
+
+    db.commit()
+    return inserted
+
+
 def set_has_shotlist_pdf(db: sqlite3.Connection) -> int:
     """Mark film_rolls that have a matching PDF in the shotlist folder.
 
@@ -841,6 +922,13 @@ def main():
                ("discovery_rows", str(n_rows)))
     db.execute("INSERT OR REPLACE INTO _manifest VALUES (?,?)",
                ("discovery_timecodes", str(n_tc)))
+
+    t1 = time.time()
+    print("Linking FR rolls from discovery_shotlist...", end=" ", flush=True)
+    n_disc_xfers = ingest_discovery_shotlist_transfers(db)
+    print(f"{n_disc_xfers:,d} new transfers ({time.time()-t1:.1f}s)")
+    db.execute("INSERT OR REPLACE INTO _manifest VALUES (?,?)",
+               ("discovery_shotlist_xfers", str(n_disc_xfers)))
 
     t1 = time.time()
     print("Setting has_shotlist_pdf flags...", end=" ", flush=True)
