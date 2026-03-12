@@ -21,9 +21,32 @@ router.get("/", (req, res) => {
   const params: (string | number)[] = [];
 
   if (q) {
-    conditions.push("(identifier LIKE ? OR title LIKE ? OR description LIKE ? OR mission LIKE ?)");
-    const like = `%${q}%`;
-    params.push(like, like, like, like);
+    // Split into tokens and normalise separators (- and _ → space, lowercase).
+    const tokens = q
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((t) => t.toLowerCase().replace(/[-_]/g, " "));
+    if (tokens.length > 0) {
+      // Use SQLite REPLACE() to normalise stored column values the same way.
+      const norm = (col: string) =>
+        `REPLACE(REPLACE(LOWER(COALESCE(${col},'')), '-', ' '), '_', ' ')`;
+      const fields = ["identifier", "title", "description", "mission"];
+      // Require ALL tokens to appear in the SAME field (at least one field must
+      // satisfy every token). This prevents "gemini" matching via title while
+      // "4" sneaks in via an identifier like FR-0046.
+      const fieldConditions = fields.map((field) => {
+        const allTokensMatch = tokens.map(() => `${norm(field)} LIKE ?`).join(" AND ");
+        return `(${allTokensMatch})`;
+      });
+      conditions.push(`(${fieldConditions.join(" OR ")})`);
+      // Params: for each field, push a value per token.
+      for (const _field of fields) {
+        for (const token of tokens) {
+          params.push(`%${token}%`);
+        }
+      }
+    }
   }
   if (prefix) {
     conditions.push("id_prefix = ?");

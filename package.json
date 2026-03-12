@@ -13,7 +13,7 @@
     "api:build": "node esbuild.mjs",
     "api:build:watch": "npm run api:build -- --watch",
     "api:serve": "node ./.local/express/dist/api.js",
-    "api:serve:dev": "cross-env NODE_ENV=development node --watch ./.local/express/dist/api.js",
+    "api:serve:dev": "cross-env NODE_ENV=development node --watch --watch-preserve-output ./.local/express/dist/api.js",
     "api:prod": "cross-env NODE_ENV=production node ./.local/express/dist/api.js",
     "start": "npm run api:prod",
     "tsc": "tsc --pretty",
@@ -30,6 +30,9 @@
     "test:all": "npm run lint && npm run tsc && npm run tsc:server && npm run build && npm run test"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^7.2.0",
+    "@fortawesome/free-solid-svg-icons": "^7.2.0",
+    "@fortawesome/react-fontawesome": "^3.2.0",
     "better-sqlite3": "^11.7.0",
     "dotenv": "^17.3.1",
     "express": "^5.1.0",

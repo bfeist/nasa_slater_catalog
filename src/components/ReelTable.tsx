@@ -1,4 +1,6 @@
 import type { JSX } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faHardDrive, faFilePdf } from "@fortawesome/free-solid-svg-icons";
 import type { FilmReel } from "../types";
 
 interface ReelTableProps {
@@ -21,8 +23,6 @@ export default function ReelTable({ rows, total, onSelectReel }: ReelTableProps)
             <th>Prefix</th>
             <th>Title</th>
             <th>Date</th>
-            <th>Mission</th>
-            <th>Audio</th>
             <th>Disk</th>
             <th>PDF</th>
           </tr>
@@ -44,15 +44,13 @@ export default function ReelTable({ rows, total, onSelectReel }: ReelTableProps)
                 {r.title ? (r.title.length > 80 ? r.title.slice(0, 80) + "…" : r.title) : "—"}
               </td>
               <td>{r.date || "—"}</td>
-              <td>{r.mission || "—"}</td>
-              <td>{r.audio || "—"}</td>
-              <td>{r.has_transfer_on_disk ? "✓" : ""}</td>
-              <td>{r.has_shotlist_pdf ? "✓" : ""}</td>
+              <td>{r.has_transfer_on_disk ? <FontAwesomeIcon icon={faHardDrive} /> : ""}</td>
+              <td>{r.has_shotlist_pdf ? <FontAwesomeIcon icon={faFilePdf} /> : ""}</td>
             </tr>
           ))}
           {rows.length === 0 && (
             <tr>
-              <td colSpan={8} className="reel-table-empty">
+              <td colSpan={6} className="reel-table-empty">
                 No results
               </td>
             </tr>

@@ -36,6 +36,10 @@ export default function VideoPlayer({
   // While dragging, show the preview time; null means not dragging
   const [dragTime, setDragTime] = useState<number | null>(null);
 
+  // Tracks a deferred videoStop call so it can be cancelled on Strict Mode / HMR
+  // remounts where the same streamId is re-registered immediately after cleanup.
+  const pendingStopRef = useRef<{ id: string; timer: ReturnType<typeof setTimeout> } | null>(null);
+
   const duration = durationSecs ?? 0;
   const currentTime = streamKey.offset + videoTime;
 
@@ -68,13 +72,29 @@ export default function VideoPlayer({
   // Sends an immediate ping, then one every 5 s.
   // Cleanup fires on seek (new streamKey) and on unmount, sending an explicit
   // stop so the server kills ffmpeg right away instead of waiting for timeout.
+  //
+  // The stop is deferred by one tick so that React Strict Mode's immediate
+  // cleanup→remount cycle (which reuses the same streamId) can cancel it.
+  // On a real seek the new streamKey has a different id, so the old stop is
+  // NOT cancelled and still fires correctly.
   useEffect(() => {
     const { id } = streamKey;
+
+    // Cancel a pending stop for this same stream id (Strict Mode / HMR remount).
+    if (pendingStopRef.current?.id === id) {
+      clearTimeout(pendingStopRef.current.timer);
+      pendingStopRef.current = null;
+    }
+
     videoHeartbeat(id).catch(() => {});
     const interval = setInterval(() => videoHeartbeat(id).catch(() => {}), 5_000);
     return () => {
       clearInterval(interval);
-      videoStop(id).catch(() => {});
+      const timer = setTimeout(() => {
+        if (pendingStopRef.current?.id === id) pendingStopRef.current = null;
+        videoStop(id).catch(() => {});
+      }, 0);
+      pendingStopRef.current = { id, timer };
     };
   }, [streamKey]);
 

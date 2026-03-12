@@ -12,7 +12,7 @@ interface SearchBarProps {
 export default function SearchBar({
   initialQuery = "",
   initialPrefix = "",
-  initialHasTransfer = false,
+  initialHasTransfer = true,
   onSearch,
 }: SearchBarProps): JSX.Element {
   const [query, setQuery] = useState(initialQuery);
