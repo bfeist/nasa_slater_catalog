@@ -4,6 +4,7 @@ import SearchBar from "../components/SearchBar";
 import ReelTable from "../components/ReelTable";
 import ReelDetailModal from "../components/ReelDetailModal";
 import { searchReels } from "../api/client";
+import { QUALITY_BUCKETS } from "../utils/qualityBuckets";
 import type { FilmReel } from "../types";
 
 const PAGE_SIZE = 50;
@@ -13,6 +14,7 @@ export default function SearchPage(): JSX.Element {
 
   const q = searchParams.get("q") || "";
   const hasTransfer = searchParams.get("has_transfer") === "1";
+  const qualityBucket = searchParams.get("quality_bucket") || "";
 
   const [rows, setRows] = useState<FilmReel[]>([]);
   const [total, setTotal] = useState(0);
@@ -43,6 +45,7 @@ export default function SearchPage(): JSX.Element {
           page: 1,
           limit: PAGE_SIZE,
           has_transfer: effectiveHasTransfer || undefined,
+          quality_bucket: qualityBucket || undefined,
         });
         if (!cancelled) {
           setRows(result.rows);
@@ -61,7 +64,7 @@ export default function SearchPage(): JSX.Element {
     return () => {
       cancelled = true;
     };
-  }, [q, effectiveHasTransfer]);
+  }, [q, effectiveHasTransfer, qualityBucket]);
 
   // Load next page (called by IntersectionObserver sentinel)
   const loadMore = useCallback(async () => {
@@ -74,6 +77,7 @@ export default function SearchPage(): JSX.Element {
         page,
         limit: PAGE_SIZE,
         has_transfer: effectiveHasTransfer || undefined,
+        quality_bucket: qualityBucket || undefined,
       });
       setRows((prev) => [...prev, ...result.rows]);
       setTotal(result.total);
@@ -83,7 +87,7 @@ export default function SearchPage(): JSX.Element {
     } finally {
       setLoading(false);
     }
-  }, [q, effectiveHasTransfer, loading]);
+  }, [q, effectiveHasTransfer, qualityBucket, loading]);
 
   // Sentinel ref — triggers loadMore when scrolled into view
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -109,6 +113,15 @@ export default function SearchPage(): JSX.Element {
     const params: Record<string, string> = {};
     if (newQ) params.q = newQ;
     if (newHasTransfer) params.has_transfer = "1";
+    if (qualityBucket) params.quality_bucket = qualityBucket;
+    setSearchParams(params);
+  }
+
+  function handleQualityFilter(bucket: string) {
+    const params: Record<string, string> = {};
+    if (q) params.q = q;
+    if (hasTransfer) params.has_transfer = "1";
+    if (bucket) params.quality_bucket = bucket;
     setSearchParams(params);
   }
 
@@ -120,6 +133,33 @@ export default function SearchPage(): JSX.Element {
         onSearch={handleSearch}
         revealed={revealed}
       />
+
+      <div className="quality-filter-bar">
+        <span className="quality-filter-label">Quality:</span>
+        <button
+          type="button"
+          className={`quality-filter-btn${!qualityBucket ? " active" : ""}`}
+          onClick={() => handleQualityFilter("")}
+        >
+          All
+        </button>
+        {QUALITY_BUCKETS.map((b) => (
+          <button
+            key={b.key}
+            type="button"
+            className={[
+              "quality-filter-btn",
+              `quality-bucket-${b.key}`,
+              qualityBucket === b.key ? "active" : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            onClick={() => handleQualityFilter(qualityBucket === b.key ? "" : b.key)}
+          >
+            {b.label}
+          </button>
+        ))}
+      </div>
 
       {error && <div className="error-msg">Error: {error}</div>}
 

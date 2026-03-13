@@ -19,6 +19,12 @@ export interface FilmReel {
   has_shotlist_pdf: number;
   has_transfer_on_disk: number;
   shotlist_pdfs: string | null; // JSON array of PDF filenames, or null
+  /** Best available copy: raw codec name (e.g. 'prores', 'h264') */
+  best_quality_codec: string | null;
+  /** Best available copy: pixel width */
+  best_quality_width: number | null;
+  /** Best available copy: pixel height */
+  best_quality_height: number | null;
   rowid_excel: number | null;
   // Fields added by First Steps / NARA ingest
   nara_roll_number: string | null;

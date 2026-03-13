@@ -163,7 +163,7 @@ select {
 .reel-table th,
 .reel-table td {
   text-align: left;
-  padding: 0.35rem 0.6rem;
+  padding: 0.2rem 0.6rem;
   border-bottom: 1px solid #eeeeee;
 }
 
@@ -329,11 +329,11 @@ select {
 
 .quality-badge {
   display: inline-block;
-  background: #eeeeee;
-  padding: 0.15em 0.5em;
-  border-radius: 2px;
-  font-size: 0.85em;
-  margin-bottom: 0.4rem;
+  padding: 0.1rem 0.45rem;
+  font-size: 0.78em;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  white-space: nowrap;
 }
 
 .probe-error {
@@ -633,6 +633,93 @@ select {
 }
 
 /* --- Future stubs --- */
+
+/* --- Quality filter bar --- */
+.quality-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.quality-filter-label {
+  font-size: 0.85em;
+  color: #666666;
+  white-space: nowrap;
+}
+
+.quality-filter-btn {
+  padding: 0.2rem 0.65rem;
+  font-size: 0.82em;
+  border: 1px solid #cccccc;
+  border-radius: 3px;
+  background: #f4f4f4;
+  color: #333333;
+  cursor: pointer;
+  transition:
+    background 0.1s,
+    border-color 0.1s;
+}
+
+.quality-filter-btn:hover {
+  background: #e8e8e8;
+  border-color: #999999;
+}
+
+.quality-filter-btn.active {
+  border-color: currentcolor;
+  font-weight: 600;
+}
+
+/* Quality tier colour chips — filter buttons and table badges */
+.quality-bucket-prores-4k {
+  color: #5a3300;
+  background: #fff3cd;
+  border-color: #c9930a;
+}
+
+.quality-bucket-prores-hd {
+  color: #003d99;
+  background: #ddeeff;
+  border-color: #4488dd;
+}
+
+.quality-bucket-prores-sd {
+  color: #005c5c;
+  background: #d4f0ef;
+  border-color: #2aab9e;
+}
+
+.quality-bucket-h264-hd {
+  color: #1a5200;
+  background: #d4f0e0;
+  border-color: #2aab72;
+}
+
+.quality-bucket-proxy {
+  color: #555555;
+  background: #eeeeee;
+  border-color: #aaaaaa;
+}
+
+/* --- Quality badge in table cells and detail cards --- */
+.quality-badge-block {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.85em;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.quality-badge-none {
+  color: #bbbbbb;
+  border: none;
+  padding: 0;
+}
+
 /* --- External file refs section --- */
 .ext-refs-section {
   margin-bottom: 1.5rem;

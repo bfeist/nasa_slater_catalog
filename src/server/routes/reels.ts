@@ -5,6 +5,7 @@
 import { Router } from "express";
 import { getDb } from "../db.js";
 import { toSlater, resolveIdentifier, isRevealed } from "../slater.js";
+import { QUALITY_BUCKETS } from "../../utils/qualityBuckets.js";
 
 const router = Router();
 
@@ -16,6 +17,7 @@ router.get("/", (req, res) => {
   const limit = Math.min(200, Math.max(1, parseInt((req.query.limit as string) ?? "50", 10)));
   const offset = (page - 1) * limit;
   const hasTransfer = req.query.has_transfer as string | undefined;
+  const qualityBucket = req.query.quality_bucket as string | undefined;
 
   const conditions: string[] = [];
   const params: (string | number)[] = [];
@@ -58,20 +60,57 @@ router.get("/", (req, res) => {
   if (hasTransfer === "1") {
     conditions.push("has_transfer_on_disk = 1");
   }
+  if (qualityBucket) {
+    const bucket = QUALITY_BUCKETS.find((b) => b.key === qualityBucket);
+    if (bucket) {
+      // sqlWhere contains only literal values — safe to interpolate directly
+      conditions.push(
+        `EXISTS (
+          SELECT 1
+          FROM transfer_file_matches tfm
+          JOIN files_on_disk fod ON fod.id = tfm.file_id
+          JOIN ffprobe_metadata ffp ON ffp.file_id = fod.id
+          WHERE tfm.reel_identifier = fr.identifier
+            AND (${bucket.sqlWhere}))`
+      );
+    }
+  }
 
   const where = conditions.length ? "WHERE " + conditions.join(" AND ") : "";
 
-  const countRow = d.prepare(`SELECT COUNT(*) as c FROM film_rolls ${where}`).get(...params) as {
+  // Order to pick the "best" available file: ProRes > H.264 > MPEG > other,
+  // then widest resolution first.
+  const BEST_QUALITY_ORDER = `
+    CASE WHEN ffp.video_codec = 'prores' THEN 0
+         WHEN ffp.video_codec = 'h264' OR ffp.video_codec = 'hevc' THEN 1
+         WHEN ffp.video_codec LIKE 'mpeg%' THEN 2
+         ELSE 3 END ASC,
+    COALESCE(ffp.video_width, 0) DESC`;
+
+  const bestQualitySubquery = (col: string) =>
+    `(SELECT ffp.${col}
+      FROM transfer_file_matches tfm
+      JOIN files_on_disk fod ON fod.id = tfm.file_id
+      JOIN ffprobe_metadata ffp ON ffp.file_id = fod.id
+      WHERE tfm.reel_identifier = fr.identifier
+        AND ffp.video_codec IS NOT NULL
+      ORDER BY ${BEST_QUALITY_ORDER}
+      LIMIT 1)`;
+
+  const countRow = d.prepare(`SELECT COUNT(*) as c FROM film_rolls fr ${where}`).get(...params) as {
     c: number;
   };
   const total = countRow.c;
 
   const rows = d
     .prepare(
-      `SELECT identifier, id_prefix, title, date, feet, minutes, audio, mission,
-              has_shotlist_pdf, has_transfer_on_disk
-       FROM film_rolls ${where}
-       ORDER BY identifier
+      `SELECT fr.identifier, fr.id_prefix, fr.title, fr.date, fr.feet, fr.minutes, fr.audio,
+              fr.mission, fr.has_shotlist_pdf, fr.has_transfer_on_disk,
+              ${bestQualitySubquery("video_codec")} AS best_quality_codec,
+              ${bestQualitySubquery("video_width")} AS best_quality_width,
+              ${bestQualitySubquery("video_height")} AS best_quality_height
+       FROM film_rolls fr ${where}
+       ORDER BY fr.identifier
        LIMIT ? OFFSET ?`
     )
     .all(...params, limit, offset);

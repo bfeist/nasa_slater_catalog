@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, type JSX } from "react";
 import { Link } from "react-router-dom";
 import { fetchReelDetail } from "../api/client";
 import type { ReelDetailResponse, FfprobeMetadata } from "../types";
+import { computeQualityLabel } from "../utils/qualityBuckets";
 import TransferList from "./TransferList";
 import FileInfoCard from "./FileInfoCard";
 import DiscoveryEntries from "./DiscoveryEntries";
@@ -205,7 +206,14 @@ export default function ReelDetailModal({
               const probe = probeByFile.get(fm.file_id);
               const displayFilename = revealed
                 ? undefined
-                : `${probe?.quality_label?.toLowerCase().replace(/\s+/g, "-") ?? "file"}-${i + 1}`;
+                : `${computeQualityLabel(
+                    probe?.video_codec,
+                    probe?.video_width,
+                    probe?.video_height
+                  )
+                    .toLowerCase()
+                    .replace(/[^a-z0-9]+/g, "-")
+                    .replace(/^-|-$/g, "")}-${i + 1}`;
               return (
                 <FileInfoCard
                   key={fm.file_id}

@@ -2,6 +2,7 @@ import type { JSX } from "react";
 import prettyBytes from "pretty-bytes";
 import type { FileMatch, FfprobeMetadata } from "../types";
 import { formatDuration, formatFrameRate, formatResolution } from "../utils/format";
+import { computeQualityLabel, getBucketKey } from "../utils/qualityBuckets";
 
 interface FileInfoCardProps {
   file: FileMatch;
@@ -58,7 +59,18 @@ export default function FileInfoCard({
       {probe && !probe.probe_error && (
         <div className="probe-section">
           <div className="probe-section-title">File Quality Details</div>
-          {probe.quality_label && <div className="quality-badge">{probe.quality_label}</div>}
+          {probe.video_codec && (() => {
+            const label = computeQualityLabel(probe.video_codec, probe.video_width, probe.video_height);
+            const bucketKey = getBucketKey(probe.video_codec, probe.video_width);
+            return (
+              <div
+                className={`quality-badge quality-badge-block${bucketKey ? ` quality-bucket-${bucketKey}` : ""}`}
+                title={`${probe.video_codec} ${probe.video_width ?? "?"}\xd7${probe.video_height ?? "?"}`}
+              >
+                {label}
+              </div>
+            );
+          })()}
           <dl className="file-info-dl">
             <dt>Format</dt>
             <dd>{probe.format_long_name || probe.format_name || "—"}</dd>

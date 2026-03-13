@@ -2,6 +2,29 @@ import type { JSX } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHardDrive, faFilePdf } from "@fortawesome/free-solid-svg-icons";
 import type { FilmReel } from "../types";
+import { computeQualityLabel, getBucketKey } from "../utils/qualityBuckets";
+
+function QualityBadge({
+  codec,
+  width,
+  height,
+}: {
+  codec: string | null | undefined;
+  width: number | null | undefined;
+  height: number | null | undefined;
+}): JSX.Element {
+  const label = computeQualityLabel(codec, width, height);
+  if (!codec) return <span className="quality-badge quality-badge-none">—</span>;
+  const bucketKey = getBucketKey(codec, width);
+  return (
+    <span
+      className={`quality-badge${bucketKey ? ` quality-bucket-${bucketKey}` : ""}`}
+      title={`${codec} ${width ?? "?"}\xd7${height ?? "?"}`}
+    >
+      {label}
+    </span>
+  );
+}
 
 interface ReelTableProps {
   rows: FilmReel[];
@@ -29,6 +52,7 @@ export default function ReelTable({
             <th>Slater #</th>
             <th>Title</th>
             <th>Date</th>
+            <th>Quality</th>
             <th>Disk</th>
             <th>PDF</th>
           </tr>
@@ -52,13 +76,20 @@ export default function ReelTable({
                 {r.title ? (r.title.length > 80 ? r.title.slice(0, 80) + "…" : r.title) : "—"}
               </td>
               <td>{r.date || "—"}</td>
+              <td>
+                <QualityBadge
+                  codec={r.best_quality_codec}
+                  width={r.best_quality_width}
+                  height={r.best_quality_height}
+                />
+              </td>
               <td>{r.has_transfer_on_disk ? <FontAwesomeIcon icon={faHardDrive} /> : ""}</td>
               <td>{r.has_shotlist_pdf ? <FontAwesomeIcon icon={faFilePdf} /> : ""}</td>
             </tr>
           ))}
           {rows.length === 0 && (
             <tr>
-              <td colSpan={revealed ? 6 : 5} className="reel-table-empty">
+              <td colSpan={revealed ? 7 : 6} className="reel-table-empty">
                 No results
               </td>
             </tr>
