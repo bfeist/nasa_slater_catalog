@@ -134,7 +134,8 @@ router.get("/:file_id/stream", (req, res) => {
   const watermark =
     `scale=1280:-2:force_original_aspect_ratio=decrease,format=yuv420p,` +
     `drawtext=fontfile='${fontEscaped}'` +
-    ":text='%{pts\\:hms}'" +
+    // ":text='%{pts\\:hms}'" +
+    ":text='F%{frame_num}T%{pts}'" +
     ":fontsize=h/10" +
     ":fontcolor=white@0.3" +
     ":x=(w-text_w)/2" +

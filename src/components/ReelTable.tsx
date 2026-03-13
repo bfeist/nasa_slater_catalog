@@ -38,7 +38,7 @@ export default function ReelTable({ rows, onSelectReel, revealed }: ReelTablePro
       <thead>
         <tr>
           {revealed && <th>Identifier</th>}
-          <th>Slater Film Roll</th>
+          <th>Catalog ID</th>
           <th>Title</th>
           <th>Date</th>
           <th>Quality</th>

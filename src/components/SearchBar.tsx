@@ -36,8 +36,8 @@ export default function SearchBar({
           type="text"
           placeholder={
             revealed
-              ? "Search by identifier, Slater Film Roll (SFR-XXXXXX), title, description, or mission…"
-              : "Search by Slater Film Roll (SFR-XXXXXX), title, description, or mission…"
+              ? "Search by identifier, Catalog ID (SFR-XXXXXX), title, description, or mission…"
+              : "Search by Catalog ID (SFR-XXXXXX), title, description, or mission…"
           }
           value={query}
           onChange={(e) => setQuery(e.target.value)}

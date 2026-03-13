@@ -40,6 +40,15 @@ import re
 import urllib.error
 import urllib.request
 
+from rich.progress import (
+    BarColumn,
+    MofNCompleteColumn,
+    Progress,
+    TaskProgressColumn,
+    TextColumn,
+    TimeRemainingColumn,
+)
+
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
@@ -200,58 +209,78 @@ def process_batch(
 
     jobs = [(i, ident, title) for i, (ident, title) in enumerate(rows, 1)]
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
-        future_map = {executor.submit(_generate, job): job for job in jobs}
+    progress = Progress(
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        MofNCompleteColumn(),
+        TaskProgressColumn(),
+        TimeRemainingColumn(),
+    )
+    task = progress.add_task("Generating titles", total=total)
 
-        for future in concurrent.futures.as_completed(future_map):
-            i, ident, title = future_map[future]
+    with progress:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
+            future_map = {executor.submit(_generate, job): job for job in jobs}
+
             try:
-                _, ident, title, alt = future.result()
-                alt = _strip_reel_ids(alt)  # strip any identifiers the LLM echoed back
-                # Use the identifier-stripped title as baseline for all comparisons so
-                # that annotation tokens (e.g. "FR", "0046", "DISCOVERY") don't skew
-                # word-count or overlap checks.
-                clean_orig = _strip_reel_ids(title)
-                # Validation 1: reject if notably longer than original
-                orig_words = len(clean_orig.split())
-                alt_words = len(alt.split())
-                if alt_words > orig_words * 1.3 + 3:
-                    print(f"  [{i}/{total}] {ident}: REJECTED (too wordy: {orig_words}→{alt_words} words)")
-                    print(f"    orig: {title}")
-                    print(f"    alt:  {alt}")
-                    fail += 1
-                    continue
+                for future in concurrent.futures.as_completed(future_map):
+                    i, ident, title = future_map[future]
+                    try:
+                        _, ident, title, alt = future.result()
+                        alt = _strip_reel_ids(alt)  # strip any identifiers the LLM echoed back
+                        # Use the identifier-stripped title as baseline for all comparisons so
+                        # that annotation tokens (e.g. "FR", "0046", "DISCOVERY") don't skew
+                        # word-count or overlap checks.
+                        clean_orig = _strip_reel_ids(title)
+                        # Validation 1: reject if notably longer than original
+                        orig_words = len(clean_orig.split())
+                        alt_words = len(alt.split())
+                        if alt_words > orig_words * 1.3 + 3:
+                            progress.console.print(f"  [{i}/{total}] {ident}: REJECTED (too wordy: {orig_words}→{alt_words} words)")
+                            progress.console.print(f"    orig: {title}")
+                            progress.console.print(f"    alt:  {alt}")
+                            fail += 1
+                            progress.advance(task)
+                            continue
 
-                # Validation 2: reject hallucinations — must share significant words
-                orig_sig = _significant_words(clean_orig)
-                alt_sig = _significant_words(alt)
-                if orig_sig and alt_sig:
-                    overlap = len(orig_sig & alt_sig) / len(orig_sig)
-                    if overlap < 0.25:
-                        print(f"  [{i}/{total}] {ident}: REJECTED (hallucination — {overlap:.0%} word overlap)")
-                        print(f"    orig: {title}")
-                        print(f"    alt:  {alt}")
+                        # Validation 2: reject hallucinations — must share significant words
+                        orig_sig = _significant_words(clean_orig)
+                        alt_sig = _significant_words(alt)
+                        if orig_sig and alt_sig:
+                            overlap = len(orig_sig & alt_sig) / len(orig_sig)
+                            if overlap < 0.25:
+                                progress.console.print(f"  [{i}/{total}] {ident}: REJECTED (hallucination — {overlap:.0%} word overlap)")
+                                progress.console.print(f"    orig: {title}")
+                                progress.console.print(f"    alt:  {alt}")
+                                fail += 1
+                                progress.advance(task)
+                                continue
+
+                        if not dry_run:
+                            db.execute(
+                                "UPDATE film_rolls SET alternate_title = ? WHERE identifier = ?",
+                                (alt, ident),
+                            )
+                            db.commit()
+
+                        status = "DRY-RUN" if dry_run else "OK"
+                        progress.console.print(f"  [{i}/{total}] {ident}: {status}")
+                        progress.console.print(f"    orig: {title}")
+                        progress.console.print(f"    alt:  {alt}")
+                        ok += 1
+                    except urllib.error.URLError as exc:
+                        progress.console.print(f"  [{i}/{total}] {ident}: ERROR - {exc}")
                         fail += 1
-                        continue
-
-                if not dry_run:
-                    db.execute(
-                        "UPDATE film_rolls SET alternate_title = ? WHERE identifier = ?",
-                        (alt, ident),
-                    )
-                    db.commit()
-
-                status = "DRY-RUN" if dry_run else "OK"
-                print(f"  [{i}/{total}] {ident}: {status}")
-                print(f"    orig: {title}")
-                print(f"    alt:  {alt}")
-                ok += 1
-            except urllib.error.URLError as exc:
-                print(f"  [{i}/{total}] {ident}: ERROR - {exc}")
-                fail += 1
-            except Exception as exc:
-                print(f"  [{i}/{total}] {ident}: ERROR - {exc}")
-                fail += 1
+                    except Exception as exc:
+                        progress.console.print(f"  [{i}/{total}] {ident}: ERROR - {exc}")
+                        fail += 1
+                    finally:
+                        progress.advance(task)
+            except KeyboardInterrupt:
+                progress.console.print("\n[interrupted] Cancelling pending jobs...")
+                for f in future_map:
+                    f.cancel()
+                raise
 
     return ok, fail
 
@@ -291,7 +320,13 @@ def main() -> None:
         return
 
     t0 = time.time()
-    ok, fail = process_batch(db, rows, dry_run=args.dry_run)
+    try:
+        ok, fail = process_batch(db, rows, dry_run=args.dry_run)
+    except KeyboardInterrupt:
+        elapsed = time.time() - t0
+        print(f"\nInterrupted after {elapsed:.1f}s. Progress saved to DB.")
+        db.close()
+        sys.exit(1)
     elapsed = time.time() - t0
 
     print(f"\nDone: {ok} succeeded, {fail} failed in {elapsed:.1f}s")
