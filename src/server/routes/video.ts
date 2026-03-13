@@ -111,6 +111,7 @@ router.get("/:file_id/stream", (req, res) => {
   const probe = d.prepare("SELECT * FROM ffprobe_metadata WHERE file_id = ?").get(fileId) as
     | {
         video_codec?: string;
+        video_frame_rate?: string;
       }
     | undefined;
 
@@ -131,17 +132,33 @@ router.get("/:file_id/stream", (req, res) => {
   // Escape colons for ffmpeg drawtext filter
   const fontEscaped = config.watermarkFontPath.replace(/:/g, "\\:");
 
+  // Calculate the frame number offset for the seek position so the watermark
+  // displays frame numbers relative to the file start, not the transcode start.
+  let frameOffset = 0;
+  if (startSecs > 0 && probe?.video_frame_rate) {
+    // video_frame_rate is stored as a rational string e.g. "30000/1001" or "30/1"
+    const parts = probe.video_frame_rate.split("/");
+    const fps = parseFloat(parts[0]) / (parseFloat(parts[1]) || 1);
+    if (fps > 0) frameOffset = Math.round(startSecs * fps);
+  }
+
+  // drawtext's start_number option shifts %{frame_num} so that the first
+  // transcoded frame shows the correct absolute frame number from the source file.
+  const startNumberOpt = frameOffset > 0 ? `:start_number=${frameOffset}` : "";
   const watermark =
     `scale=1280:-2:force_original_aspect_ratio=decrease,format=yuv420p,` +
+    // Full-width semi-transparent bar behind the text.
+    // y = (ih - fontsize) / 1.5  →  ih*9/15; h = fontsize + 2*padding
+    `drawbox=x=0:y=ih*9/15-10:w=iw:h=ih/10+20:color=black@0.2:t=ih,` +
     `drawtext=fontfile='${fontEscaped}'` +
-    // ":text='%{pts\\:hms}'" +
-    ":text='F%{frame_num}T%{pts}'" +
+    `:text='F%{frame_num}T%{pts}'` +
+    startNumberOpt +
     ":fontsize=h/10" +
     ":fontcolor=white@0.3" +
     ":x=(w-text_w)/2" +
     ":y=(h-text_h)/1.5";
 
-  const ffmpegArgs: string[] = [];
+  const ffmpegArgs: string[] = ["-copyts"];
   if (startSecs > 0) {
     ffmpegArgs.push("-ss", String(startSecs));
   }
