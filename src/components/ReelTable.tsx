@@ -76,11 +76,7 @@ export default function ReelTable({
                 {revealed ? (
                   <span className="reel-title-revealed">
                     <span title={r.title ?? ""}>
-                      {r.title
-                        ? r.title.length > 80
-                          ? r.title.slice(0, 80) + "…"
-                          : r.title
-                        : "—"}
+                      {r.title ? (r.title.length > 80 ? r.title.slice(0, 80) + "…" : r.title) : "—"}
                     </span>
                     {r.alternate_title && (
                       <span

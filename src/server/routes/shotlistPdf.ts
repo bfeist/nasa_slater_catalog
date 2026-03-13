@@ -32,7 +32,10 @@ router.get("/:filename", (req, res) => {
   const stat = fs.statSync(pdfPath);
   res.setHeader("Content-Type", "application/pdf");
   res.setHeader("Content-Length", stat.size);
-  res.setHeader("Content-Disposition", `inline; filename="${filename}"`);
+  // Serve inline with no filename exposed — prevents the browser or HTTP layer
+  // from leaking the real filename to unauthenticated users.
+  res.setHeader("Content-Disposition", "inline");
+  res.setHeader("Cache-Control", "no-store");
   fs.createReadStream(pdfPath).pipe(res);
 });
 

@@ -204,8 +204,8 @@ select {
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #888;
-  border: 1px solid #555;
+  color: #888888;
+  border: 1px solid #555555;
   border-radius: 3px;
   padding: 1px 4px;
   cursor: default;
@@ -214,8 +214,8 @@ select {
 }
 
 .reel-alt-title-btn:hover {
-  color: #ccc;
-  border-color: #999;
+  color: #cccccc;
+  border-color: #999999;
 }
 
 .reel-table-empty {
@@ -931,13 +931,55 @@ select {
 
 .pdf-viewer-body {
   flex: 1;
-  overflow: hidden;
+  overflow-y: auto;
   display: flex;
-  align-items: stretch;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem 0;
 }
 
-.pdf-viewer-iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
+/* react-pdf Document wrapper */
+.pdf-viewer-document {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Page-number tab row — sits at the bottom, more prominent than the file tabs */
+.pdf-viewer-page-tabs {
+  border-top: 2px solid #aaaaaa;
+  border-bottom: none;
+  background: #e8e8e8;
+}
+
+.pdf-viewer-page-tabs .pdf-viewer-tab {
+  background: #e8e8e8;
+  font-size: 0.8em;
+  min-width: 2em;
+  text-align: center;
+  padding: 0.4em 0.6em;
+}
+
+.pdf-viewer-page-tabs .pdf-viewer-tab:hover {
+  background: #d8d8d8;
+}
+
+.pdf-viewer-page-tabs .pdf-viewer-tab-active {
+  background: #333333;
+  color: #ffffff;
+  border-bottom-color: transparent;
+  font-weight: 700;
+}
+
+.pdf-viewer-page-label {
+  padding: 0.4em 0.7em;
+  font-size: 0.75em;
+  font-weight: 600;
+  color: #666666;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  align-self: center;
+  white-space: nowrap;
+  border-right: 1px solid #cccccc;
+  margin-right: 2px;
 }
