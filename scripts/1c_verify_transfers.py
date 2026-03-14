@@ -49,11 +49,11 @@ import sqlite3
 import sys
 import time
 
-# Allow "from matchers.x import y" without installing the package.
+# Allow importing sibling scripts as modules.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from matchers.db_resolve import ResolvedMatch, resolve
-from matchers.filename_parser import parse_filename
+from db_resolve import ResolvedMatch, resolve
+from filename_parser import parse_filename
 
 DB_PATH = "database/catalog.db"
 
