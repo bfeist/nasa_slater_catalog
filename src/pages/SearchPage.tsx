@@ -6,6 +6,7 @@ import ReelTable from "../components/ReelTable";
 import ReelDetailModal from "../components/ReelDetailModal";
 import { searchReels } from "../api/client";
 import { QUALITY_BUCKETS } from "../utils/qualityBuckets";
+import { useAuth } from "../lib/AuthContext";
 import type { FilmReel } from "../types";
 import styles from "./SearchPage.module.css";
 
@@ -85,6 +86,8 @@ export default function SearchPage(): JSX.Element {
   const hasTransfer = searchParams.get("has_transfer") === "1";
   const qualityBucket = searchParams.get("quality_bucket") || "";
 
+  const { authVersion } = useAuth();
+
   const [rows, setRows] = useState<FilmReel[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -142,7 +145,7 @@ export default function SearchPage(): JSX.Element {
     return () => {
       cancelled = true;
     };
-  }, [q, effectiveHasTransfer, qualityBucket, currentPage]);
+  }, [q, effectiveHasTransfer, qualityBucket, currentPage, authVersion]);
 
   function handleSearch(newQ: string, newHasTransfer: boolean) {
     const params: Record<string, string> = {};
