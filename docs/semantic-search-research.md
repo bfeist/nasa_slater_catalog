@@ -2,7 +2,7 @@
 
 ## Current State
 
-**Search today:** LIKE-based substring matching on `identifier`, `title`, `description`, and `mission` columns in SQLite. The Express API server (`src/server/`) handles all `/api/*` requests, backed by `better-sqlite3`. This is pure keyword matching — searching "lunar landing footage" won't find a reel titled "Apollo 11 descent to surface."
+**Search today:** FTS5 full-text search with BM25 ranking on `identifier`, `title`, `alternate_title`, `description`, `mission`, and `shotlist_text` columns in SQLite. The Express API server (`src/server/routes/reels.ts`) uses FTS5 MATCH when the `film_rolls_fts` table exists, with LIKE-based substring matching as a fallback. Search results include a `shotlist_snippet` excerpt via FTS5's `snippet()` function and a `search_rank` BM25 score. The API response includes a `search` field indicating the strategy used (`"fts5"`, `"like"`, or `"none"`).
 
 **Data scale:**
 | Corpus | Row count | Text quality |
@@ -85,7 +85,7 @@ def clean_marker_text(markdown: str) -> str:
     return "\n".join(ln for ln in text.splitlines() if len(ln.strip()) > 5)
 ```
 
-> **Note:** `data/01_shotlist_raw/` contains marker-pdf JSON/MD outputs from an earlier exploratory pipeline (~101 PDFs). These are not used for search indexing — they were produced for a different purpose (structured data extraction, which was abandoned as unworkable given the variety of PDF formats). The PyMuPDF approach supersedes them entirely.
+> **Note:** `data/01c_llm_ocr/` contains 9,324 LLM vision OCR outputs from Stage 1c — this is the **primary OCR source** for the FTS5 index. `data/01_shotlist_raw/` contains ~1,383 marker-pdf OCR outputs from Stage 1a (now superseded). The `scripts/shotlist/1d_build_fts_index.py` script uses LLM text as primary and optionally includes marker text as a supplement when it contributes meaningful unique content. Use `--skip-marker` to exclude marker data entirely. See [`docs/done/ocr-comparison-report.md`](done/ocr-comparison-report.md) for the full quality comparison.
 
 ---
 
@@ -155,25 +155,25 @@ When a search term is found in a shotlist PDF but not in the reel's title, the r
 
 4. **Shotlist preview panel.** Clicking a result opens an inline accordion showing the first few lines of the raw shotlist text. Goes well with the existing PDF viewer.
 
-**Recommendation:** Start with option 1 (ship it, see if users complain), plan for option 3 (FTS5 snippet) in the same sprint as FTS5 since the infrastructure is free.
+**Recommendation:** Option 3 (FTS5 snippet) is implemented — the API returns `shotlist_snippet` in FTS5 search results. Frontend rendering of this snippet as a subline under the title is available.
 
 ---
 
 ## Implementation Plan
 
-### Phase 1: FTS5 + Shotlist Text Column (1-2 days)
+### Phase 1: FTS5 + Shotlist Text Column — DONE
 
-1. **`scripts/1f_build_fts_index.py`** (new):
-   - For each reel with `has_shotlist_pdf = 1`, extract text from all matched PDFs using PyMuPDF; apply cleaning pass
-   - For reels with no embedded PDF text (~2%), run marker `force_ocr` to generate text and strip markdown
-   - Write cleaned text to `film_rolls.shotlist_text` (new TEXT column, `ALTER TABLE ... ADD COLUMN`)
-   - Also pull `discovery_shotlist.shotlist_raw` for any matched identifiers and append
-   - Create `film_rolls_fts` virtual table over `(identifier, title, description, mission, shotlist_text)`
-   - Run `INSERT INTO film_rolls_fts(film_rolls_fts) VALUES('rebuild')`
+1. **`scripts/shotlist/1d_build_fts_index.py`** (implemented):
+   - Reads LLM OCR text from `data/01c_llm_ocr/` as primary source
+   - Optionally includes marker-pdf text from `data/01_shotlist_raw/` as supplement (when ≥10 unique real words, excluding form boilerplate)
+   - Use `--skip-marker` to exclude marker data entirely
+   - Writes cleaned text to `film_rolls.shotlist_text`
+   - Also pulls `discovery_shotlist.shotlist_raw` for any matched identifiers and appends
+   - Creates `film_rolls_fts` virtual table over `(identifier, title, alternate_title, description, mission, shotlist_text)`
 
-2. **`src/server/routes/reels.ts`**: when `q` is present, use `film_rolls_fts MATCH ?` with BM25 ordering instead of LIKE. Keep LIKE as fallback if FTS5 table doesn't exist.
+2. **`src/server/routes/reels.ts`** (implemented): when `q` is present, uses `film_rolls_fts MATCH ?` with BM25 ordering. Keeps LIKE as fallback if FTS5 table doesn't exist. Includes `shotlist_snippet` and `search_rank` in FTS5 results.
 
-3. **Optional:** Add `snippet_text` field to API response using FTS5's `snippet()` function.
+3. **Snippet support** (implemented): FTS5's `snippet()` returns context excerpts around matched terms in shotlist text. The API includes `shotlist_snippet` in the response.
 
 ### Phase 2: sqlite-vec Semantic Embeddings (1-2 days)
 
@@ -200,7 +200,7 @@ When a search term is found in a shotlist PDF but not in the reel's title, the r
 
 As library coverage grows the index becomes richer automatically:
 
-- Re-run `1f_build_fts_index.py` as more PDFs are processed
+- Re-run `1d_build_fts_index.py` as more PDFs are processed
 - Re-run `6_build_search_index.py` to regenerate embeddings
 - Consider LLM-generated one-sentence summaries for reels that still only have a title after PDF extraction
 
@@ -212,40 +212,47 @@ As library coverage grows the index becomes richer automatically:
 ┌──────────────────────────────────────────────────────────┐
 │                  BUILD TIME (Python)                      │
 │                                                          │
-│  shotlist_pdfs/  ─▶  PyMuPDF extract  ─▶  cleaning pass  │
-│  (9,579 PDFs)                │                           │
-│                              ▼                           │
-│                  film_rolls.shotlist_text  ◀─ ALTER TABLE │
-│                      + discovery text                    │
-│                              │                           │
-│              ┌───────────────┴───────────────┐           │
-│              ▼                               ▼           │
-│       FTS5 virtual table        sentence-transformers    │
-│    film_rolls_fts (rebuild)    all-MiniLM-L6-v2 (384d)   │
-│                                              │           │
-│                                             ▼           │
-│                                  film_rolls_vec          │
-│                              (sqlite-vec in catalog.db)  │
+│  1a: marker-pdf OCR ─▶ data/01_shotlist_raw/*.json       │
+│  1c: Qwen3.5 LLM OCR ─▶ data/01c_llm_ocr/*.json        │
+│           │                    │                         │
+│           └────────┬───────────┘                         │
+│                    ▼                                     │
+│  1d: dual-source merge (union / rescue / safe)           │
+│        + discovery_shotlist text                         │
+│                    │                                     │
+│                    ▼                                     │
+│       film_rolls.shotlist_text  (ALTER TABLE)  ✅ DONE    │
+│                    │                                     │
+│              ┌─────┴──────────────────┐                  │
+│              ▼                        ▼                  │
+│    FTS5 virtual table ✅     sentence-transformers       │
+│    film_rolls_fts            all-MiniLM-L6-v2 (384d)     │
+│                                      │                  │
+│                                      ▼                  │
+│                            film_rolls_vec (TODO)         │
+│                          (sqlite-vec in catalog.db)      │
 └──────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────┐
 │             RUNTIME (Express + React SPA)                 │
 │                                                          │
-│  Browser ──▶ /api/search?q=                              │
+│  Browser ──▶ /api/reels?q=                               │
 │                    │                                     │
 │            ┌───────┴────────┐                            │
-│            ▼                ▼                            │
-│       FTS5 MATCH        embed query via                  │
-│      + BM25 rank        onnxruntime-node                 │
+│            ▼                ▼ (future)                   │
+│       FTS5 MATCH ✅     embed query via                  │
+│     + BM25 rank         onnxruntime-node                 │
+│     + snippet()         vec_distance_cosine              │
 │            │                │                            │
-│            │        vec_distance_cosine                  │
 │            │                │                            │
 │            └───────┬────────┘                            │
 │                    ▼                                     │
-│           reciprocal rank fusion                         │
+│       reciprocal rank fusion (future)                    │
+│        or FTS5-only ranking (current)                    │
 │                    │                                     │
 │                    ▼                                     │
 │         film roll records  ──▶  JSON response            │
+│         { search: "fts5"|"like"|"none" }                 │
 └──────────────────────────────────────────────────────────┘
 ```
 
@@ -253,20 +260,20 @@ As library coverage grows the index becomes richer automatically:
 
 ## Files to Create / Change
 
-| Phase | File                                        | Change                                                         |
-| ----- | ------------------------------------------- | -------------------------------------------------------------- |
-| 1     | `scripts/1f_build_fts_index.py` (new)       | PDF text extraction + FTS5 table build                         |
-| 1     | `src/server/routes/reels.ts`                | Replace LIKE with FTS5 MATCH + BM25 ordering                   |
-| 2     | `scripts/6_build_search_index.py` (rewrite) | Extract text from DB, generate embeddings, write to sqlite-vec |
-| 2     | `package.json`                              | Add `onnxruntime-node`, `sqlite-vec`                           |
-| 2     | `src/server/services/embeddings.ts` (new)   | ONNX model loader + `embed()` function                         |
-| 2     | `src/server/routes/search.ts` (new)         | `/api/search` endpoint — FTS5 + vector, merged results         |
-| 2     | `data/models/`                              | ONNX model files for all-MiniLM-L6-v2                          |
+| Phase | File                                        | Change                                                         | Status  |
+| ----- | ------------------------------------------- | -------------------------------------------------------------- | ------- |
+| 1     | `scripts/shotlist/1d_build_fts_index.py`    | Dual-source merge (marker + LLM) + FTS5 table build            | ✅ Done |
+| 1     | `src/server/routes/reels.ts`                | FTS5 MATCH + BM25 ranking + snippet (LIKE fallback)            | ✅ Done |
+| 2     | `scripts/6_build_search_index.py` (rewrite) | Extract text from DB, generate embeddings, write to sqlite-vec |         |
+| 2     | `package.json`                              | Add `onnxruntime-node`, `sqlite-vec`                           |         |
+| 2     | `src/server/services/embeddings.ts` (new)   | ONNX model loader + `embed()` function                         |         |
+| 2     | `src/server/routes/search.ts` (new)         | `/api/search` endpoint — FTS5 + vector, merged results         |         |
+| 2     | `data/models/`                              | ONNX model files for all-MiniLM-L6-v2                          |         |
 
 ---
 
 ## Key Decisions
 
-1. **FTS5 snippet in search results?** The data is free once FTS5 is in place — just needs a frontend card subline. High value for user transparency when a match came from shotlist text rather than title.
+1. ~~**FTS5 snippet in search results?**~~ **Done.** The API returns `shotlist_snippet` via FTS5's `snippet()` function. Frontend rendering as a subline under the title is available.
 2. **sqlite-vec in Docker?** The `sqlite-vec` npm package bundles prebuilt `.so`/`.dll` binaries for linux-x64 and win32-x64. Needs verification against the target Docker base image (`node:20-slim`).
 3. **Embedding model size:** `all-MiniLM-L6-v2` (384 dims, ~30 MB ONNX) is the right choice. Larger models (768 dims) double storage with marginal gains on short-to-medium length documents.

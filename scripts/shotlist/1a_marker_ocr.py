@@ -1,5 +1,5 @@
 """
-Stage 1: Batch-process all 10,590 FR shot list PDFs through marker-pdf.
+Stage 1a: Batch-process all shotlist PDFs through marker-pdf.
 
 Outputs one JSON + one markdown file per PDF in data/01_shotlist_raw/.
 Each JSON contains the raw OCR text, quality analysis metrics, and a
@@ -10,13 +10,15 @@ Features:
   - Migrates existing spot_check_100 results on first run
   - Tracks progress in _manifest.json (resumable)
   - Prints ETA and progress every 10 PDFs
-  - Quality gate flags poor/uncertain results for VLM fallback (Stage 1c)
+  - Quality gate flags poor/uncertain results for VLM fallback
+
+Pipeline: 1a (marker OCR) → 1b (match) → 1c (LLM OCR) → 1d (merge + FTS5)
 
 Usage:
-    uv run python scripts/1_ingest_shotlist_pdfs.py              # full batch
-    uv run python scripts/1_ingest_shotlist_pdfs.py --limit 50   # test with 50
-    uv run python scripts/1_ingest_shotlist_pdfs.py --force       # re-process all
-    uv run python scripts/1_ingest_shotlist_pdfs.py --no-migrate  # skip migration
+    uv run python scripts/shotlist/1a_marker_ocr.py              # full batch
+    uv run python scripts/shotlist/1a_marker_ocr.py --limit 50   # test with 50
+    uv run python scripts/shotlist/1a_marker_ocr.py --force       # re-process all
+    uv run python scripts/shotlist/1a_marker_ocr.py --no-migrate  # skip migration
 """
 
 import argparse

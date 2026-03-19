@@ -4,7 +4,7 @@
 
 This project builds a comprehensive searchable catalog for tens of thousands of hours of archival US space program video. The system runs entirely locally (RTX 4090 GPU for AI processing) and consists of an Express backend serving a React SPA with SQLite as the data store. The ingestion pipeline populates `database/catalog.db` from source data; the web server exposes it via API.
 
-**Pipeline stages 0 through 1e are complete.** Stage 2 and beyond are future work.
+**Pipeline stages 0 through 1d are complete.** The shotlist pipeline is fully operational: marker OCR (1a), PDF matching (1b), LLM vision OCR (1c), and FTS5 full-text search (1d) are all done. Stage 2 (structured shot list parsing) and beyond are future work.
 
 ## Current State of Source Material
 
@@ -201,18 +201,13 @@ All scripts live in `/scripts/` and are numbered to reflect pipeline stages. All
 
 Validated marker-pdf OCR quality on representative PDFs. Benchmarked VLM fallback approaches. Results: marker-pdf with `force_ocr` is right for Stage 1; local VLMs hallucinate on historical docs. Full results in [`docs/done/spot-check-100-report.md`](done/spot-check-100-report.md).
 
-### Stage 1: Ingest Existing Shot List PDFs
+### Stage 1: Ingest Existing Shot List PDFs (SUPERSEDED BY 1c SHOTLIST)
 
-**Script**: `scripts/1_ingest_shotlist_pdfs.py`
+**Script**: `scripts/shotlist/1a_marker_ocr.py`
 
-Batch-process all 10,590 FR shot list PDFs through marker-pdf:
+Batch-processed shotlist PDFs through marker-pdf with `force_ocr` mode. Produced ~1,383 of 10,590 PDFs before being superseded by the LLM vision OCR (stage 1c shotlist).
 
-- Use `force_ocr` mode (these are scanned images, not digital text)
-- Output: one JSON file per PDF in `data/01_shotlist_raw/`
-- Track processing status in `data/01_shotlist_raw/_manifest.json`
-- Deduplicate: when multiple date-variant PDFs exist for the same FR number, keep the best quality (most text extracted)
-- Incremental: skip already-processed PDFs on re-run
-- Estimated time: ~15s/PDF average × 10,590 PDFs ≈ **44 hours** (single worker on RTX 4090)
+**Status: STOPPED.** Quality comparison ([`docs/done/ocr-comparison-report.md`](done/ocr-comparison-report.md)) found that marker-pdf output is unsuitable as a primary search index source because it preserves form headers (CLASSIFICATION, FOOTAGE, CAMERA ANGLE, etc.), table formatting, and produces OCR partial words. The 1c LLM OCR produces cleaner text with these stripped. The 1d FTS5 build script can optionally include marker data as a supplement (`--skip-marker` to exclude entirely).
 
 ### Stage 1b: Ingest Excel Spreadsheet Data (DONE)
 
@@ -261,9 +256,47 @@ uv run python scripts/1d_ffprobe_metadata.py --retry-errors
 
 ### Stage 1e: Match Shotlist PDFs (DONE)
 
-**Script**: `scripts/shotlist/1e_match_shotlist_pdfs.py`
+**Script**: `scripts/shotlist/1b_match_shotlist_pdfs.py`
 
 Matches the 10,590 shotlist PDFs in `static_assets/shotlist_pdfs/` to `film_rolls` records and sets `has_shotlist_pdf = 1`.
+
+### Stage 1c (shotlist): LLM Vision OCR — PRIMARY OCR SOURCE (DONE)
+
+**Script**: `scripts/shotlist/1c_llm_ocr.py`
+
+Runs all 10,590 shotlist PDFs through Qwen3.5:9b via Ollama for LLM-based transcription. Each PDF page is rendered at 200 DPI and sent to the vision model with a strict transcription-only prompt that **strips form headers, table formatting, camera angle codes, and classification boilerplate** — extracting only the meaningful content descriptions.
+
+- Anti-hallucination: non-thinking mode, temperature 0, strict prompt
+- Loop detection: catches and truncates repetitive LLM output
+- Resumable: skips already-processed PDFs on re-run
+- **9,324 PDFs processed** — complete coverage of all matched shotlist PDFs
+- This is the primary (and sole required) OCR source for the FTS5 index
+
+Output: `data/01c_llm_ocr/<stem>.json`
+
+### Stage 1d (shotlist): FTS5 Full-Text Search Index (DONE)
+
+**Script**: `scripts/shotlist/1d_build_fts_index.py`
+
+Builds an FTS5 full-text search index using LLM OCR as the primary text source. Marker-pdf text (stage 1a) is optionally included as a supplement when it contributes ≥10 unique real words not already in the LLM output (excluding form boilerplate like CLASSIFICATION, FOOTAGE, etc.).
+
+```
+uv run python scripts/shotlist/1d_build_fts_index.py                # LLM primary + marker supplement
+uv run python scripts/shotlist/1d_build_fts_index.py --skip-marker  # LLM only, no marker text
+uv run python scripts/shotlist/1d_build_fts_index.py --stats        # show stats only
+```
+
+Merge strategies (current build):
+
+- **llm-only**: 7,933 PDFs — only LLM text available
+- **llm-primary**: 227 PDFs — both available, marker adds <10 unique real words
+- **llm+marker**: 1,045 PDFs — both available, marker contributes meaningful supplement
+
+The merged text is written to `film_rolls.shotlist_text` and indexed in an FTS5 virtual table (`film_rolls_fts`) covering identifier, title, alternate_title, description, mission, and shotlist_text. The Express API (`reels.ts`) uses FTS5 MATCH with BM25 ranking when the table exists, falling back to LIKE if not.
+
+Also pulls `discovery_shotlist.shotlist_raw` text for matching reels.
+
+**Result**: 9,217 reels (21.2%) now have searchable shotlist text. Full quality comparison in [`docs/done/ocr-comparison-report.md`](done/ocr-comparison-report.md).
 
 ### Stage 2: Parse & Normalize Shot List Data
 
@@ -631,14 +664,16 @@ data/
 
 ## Estimated Processing Times (RTX 4090)
 
-| Stage              | Items       | Est. Per Item           | Total     |
-| ------------------ | ----------- | ----------------------- | --------- |
-| 1. PDF OCR         | 10,590 PDFs | ~15s                    | ~44 hours |
-| 1b. Excel ingest   | 5 tabs      | seconds                 | < 1 min   |
-| 3. Video discovery | All files   | seconds                 | minutes   |
-| 4. Video analysis  | TBD videos  | ~5-15 min/hour of video | TBD       |
-| 5. Merge           | All reels   | ms                      | seconds   |
-| 7. Search index    | All reels   | ms                      | seconds   |
+| Stage                | Items        | Est. Per Item           | Total       |
+| -------------------- | ------------ | ----------------------- | ----------- |
+| 1a. PDF OCR (marker) | 10,590 PDFs  | ~15s                    | ~44 hours   |
+| 1b. Excel ingest     | 5 tabs       | seconds                 | < 1 min     |
+| 1c. LLM OCR          | 10,590 PDFs  | ~20s                    | ~59 hours   |
+| 1d. FTS5 build       | 10,590 JSONs | ms                      | ~30 seconds |
+| 3. Video discovery   | All files    | seconds                 | minutes     |
+| 4. Video analysis    | TBD videos   | ~5-15 min/hour of video | TBD         |
+| 5. Merge             | All reels    | ms                      | seconds     |
+| 7. Search index      | All reels    | ms                      | seconds     |
 
 The bottleneck is Stage 4 (video analysis). For tens of thousands of hours, this will take **weeks to months** of continuous GPU time. This is expected and the pipeline is designed for it — progress is saved per-video, and the process can be stopped and resumed at any time.
 
@@ -647,9 +682,12 @@ The bottleneck is Stage 4 (video analysis). For tens of thousands of hours, this
 ## Next Steps
 
 1. ~~**Stage 1b**: Ingest ApolloReelsMaster.xlsx~~ **DONE**
-2. **Stage 1** (PDF OCR): Batch-process all shotlist PDFs through marker-pdf (~44 hours GPU time) — partially done
-3. **Stage 1e** (shotlist matching): `1e_match_shotlist_pdfs.py` — PDF-to-film_roll matching DONE
-4. ~~**Stage 3**: Set up video discovery on `/o/`~~ **DONE** (1c + 1d)
-5. **Stage 2**: Build the shot list parser (will need user input on document format nuances)
-6. Discuss existing catalog information in detail (user mentioned "a lot of nuance")
-7. Evaluate vision-language models for Stage 4c and multimodal LLM backup for Stage 1
+2. ~~**Stage 1a** (PDF OCR): Batch-process all shotlist PDFs through marker-pdf~~ **DONE**
+3. ~~**Stage 1e** (shotlist matching): `1b_match_shotlist_pdfs.py`~~ **DONE**
+4. ~~**Stage 1c** (LLM OCR): `1c_llm_ocr.py` — dual-source transcription~~ **DONE**
+5. ~~**Stage 1d** (FTS5): `1d_build_fts_index.py` — full-text search index~~ **DONE**
+6. ~~**Stage 3**: Set up video discovery on `/o/`~~ **DONE** (1c + 1d)
+7. **Stage 2**: Build the shot list parser (will need user input on document format nuances)
+8. Discuss existing catalog information in detail (user mentioned "a lot of nuance")
+9. Evaluate vision-language models for Stage 4c and multimodal LLM backup
+10. **Phase 2 search**: sqlite-vec semantic embeddings (see `docs/semantic-search-research.md`)

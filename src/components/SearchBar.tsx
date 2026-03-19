@@ -2,6 +2,7 @@ import { useState, type FormEvent, type JSX } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import * as Checkbox from "@radix-ui/react-checkbox";
+import SearchHelp from "./SearchHelp";
 import styles from "./SearchBar.module.css";
 
 interface SearchBarProps {
@@ -72,6 +73,7 @@ export default function SearchBar({
       <button type="submit" className={styles.submitBtn}>
         Search
       </button>
+      <SearchHelp />
     </form>
   );
 }

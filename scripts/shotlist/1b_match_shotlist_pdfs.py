@@ -1,5 +1,5 @@
 """
-Stage 1e: Match shotlist PDF filenames to film_rolls identifiers.
+Stage 1b: Match shotlist PDF filenames to film_rolls identifiers.
 
 Scans the shotlist PDF directory and matches each PDF to a film_rolls
 identifier using several strategies (exact match, date-suffix stripping,
@@ -10,10 +10,12 @@ JSON array of filenames, and updates `has_shotlist_pdf` accordingly.
 
 Idempotent — safe to re-run repeatedly as matching logic is refined.
 
+Pipeline: 1a (marker OCR) → 1b (match) → 1c (LLM OCR) → 1d (merge + FTS5)
+
 Usage:
-    uv run python scripts/1e_match_shotlist_pdfs.py              # full run
-    uv run python scripts/1e_match_shotlist_pdfs.py --dry-run    # preview only
-    uv run python scripts/1e_match_shotlist_pdfs.py --stats      # show stats only
+    uv run python scripts/shotlist/1b_match_shotlist_pdfs.py              # full run
+    uv run python scripts/shotlist/1b_match_shotlist_pdfs.py --dry-run    # preview only
+    uv run python scripts/shotlist/1b_match_shotlist_pdfs.py --stats      # show stats only
 """
 
 import argparse

@@ -30,9 +30,11 @@ This informs every architecture decision.
 The database contains things the Excel files never will:
 
 - `alternate_title` — LLM-generated search-friendly rephrasing
-- `has_shotlist_pdf` / `shotlist_pdfs` — matched during `1e`
+- `has_shotlist_pdf` / `shotlist_pdfs` — matched during `1b`
 - `has_transfer_on_disk` — confirmed by scanning `/o/` in `1c`
 - `ffprobe_metadata` — extracted from video files in `1d`
+- `shotlist_text` — merged OCR text from marker + LLM, used by FTS5
+- `film_rolls_fts` — FTS5 full-text search index (built by `1d`)
 - `file_annotations` — expert annotations from the review workflow
 - all rows from multiple source Excel files merged and normalised
 - `nara_citations`, `external_file_refs` — from the First Steps ingest
@@ -52,8 +54,8 @@ The ability to rebuild the database from source material means:
 
 3. **Recovery from corruption is cheap.** If the DB is ever in a bad state,
    `uv run python scripts/one_time/1b_ingest_apollomaster_excel.py --force`
-   rebuilds the core catalog in minutes. Enrichment passes (1c, 1d, 1e)
-   still take hours/overnight, but the base is sound.
+   rebuilds the core catalog in minutes. Enrichment passes (1b match, 1c verify,
+   1d ffprobe, 1d FTS5 build) still take hours/overnight, but the base is sound.
 
 ### When would you cut free from Excel?
 
@@ -82,7 +84,7 @@ uv run python scripts/one_time/1b_backfill_discovery_transfers.py --apply
 uv run python scripts/one_time/1b_download_nara_shotlists.py
 
 # 4. Match shotlist PDFs to film_rolls
-uv run python scripts/shotlist/1e_match_shotlist_pdfs.py
+uv run python scripts/shotlist/1b_match_shotlist_pdfs.py
 
 # 5. Scan /o/ and verify what files are actually on disk (overnight)
 uv run python scripts/1c_verify_transfers.py
@@ -95,10 +97,14 @@ uv run python scripts/title_gen/generate_alt_titles.py --all
 
 # 8. Rebuild search index (fast)
 uv run python scripts/6_build_search_index.py --force
+
+# 9. Rebuild FTS5 full-text search index (reads marker + LLM OCR from data/)
+uv run python scripts/shotlist/1d_build_fts_index.py
 ```
 
-The shotlist PDF OCR (`scripts/shotlist/1_ingest_shotlist_pdfs.py`) is NOT part
-of the rebuild because its output already lives at `data/01_shotlist_raw/` and
+The shotlist PDF OCR (`scripts/shotlist/1a_marker_ocr.py`) and LLM OCR
+(`scripts/shotlist/1c_llm_ocr.py`) are NOT part of the rebuild because their
+output already lives at `data/01_shotlist_raw/` and `data/01c_llm_ocr/` and
 should be kept across rebuilds — re-running is a 10,590-PDF GPU job.
 
 ---
@@ -159,8 +165,10 @@ unless the NARA catalog is updated and we want fresh metadata.
 | `0c_spot_check_100.py`         | 🔬 Prototype | 100-PDF stratified sample quality assessment                                               |
 | `0d_vlm_fallback_test.py`      | 🔬 Prototype | Tested Qwen2.5-VL on poor-OCR PDFs                                                         |
 | `0e_vlm_quant_benchmark.py`    | 🔬 Prototype | Benchmarked Qwen3-VL-8B fp16 vs NF4                                                        |
-| `1_ingest_shotlist_pdfs.py`    | ✅ Active    | Batch OCR of all 10,590 shotlist PDFs through marker-pdf, output → `data/01_shotlist_raw/` |
-| `1e_match_shotlist_pdfs.py`    | 🔨 Rebuild   | Matches shotlist PDFs to `film_rolls`, updates `has_shotlist_pdf` and `shotlist_pdfs`      |
+| `1a_marker_ocr.py`             | ✅ Active    | Batch OCR of all 10,590 shotlist PDFs through marker-pdf, output → `data/01_shotlist_raw/` |
+| `1b_match_shotlist_pdfs.py`    | 🔨 Rebuild   | Matches shotlist PDFs to `film_rolls`, updates `has_shotlist_pdf` and `shotlist_pdfs`      |
+| `1c_llm_ocr.py`                | ✅ Active    | LLM vision OCR (Qwen3.5:9b via Ollama) on all PDFs, stores `llm_text` alongside marker     |
+| `1d_build_fts_index.py`        | ✅ Active    | Dual-source merge (marker + LLM) + FTS5 full-text search index build                       |
 
 ### `scripts/title_gen/`
 
@@ -189,7 +197,8 @@ unless the NARA catalog is updated and we want fresh metadata.
 
 | Folder                      | Status                               | Notes                                                                                                                         |
 | --------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| `data/01_shotlist_raw/`     | ⚠️ **Keep — active pipeline output** | 10,590+ PDF OCR results from `1_ingest_shotlist_pdfs.py`. Not in DB yet; future stages will read these. Do not delete.        |
+| `data/01_shotlist_raw/`     | ⚠️ **Keep — active pipeline output** | 10,590+ PDF OCR results from `1a_marker_ocr.py` + `1c_llm_ocr.py`. Read by `1d_build_fts_index.py`. Do not delete.            |
+| `data/01c_llm_ocr/`         | ⚠️ **Keep — active pipeline output** | LLM vision OCR results from `1c_llm_ocr.py`. Read by `1d_build_fts_index.py`. Do not delete.                                  |
 | `data/marker_spot_checks/`  | 🗑️ Discard                           | 3-file prototype output from `0_spot_check_marker.py`. Superseded by spot_check_100.                                          |
 | `data/ocr_comparison/`      | 🗑️ Discard                           | 14-file prototype output from `0b_compare_ocr_approaches.py`. Decision made, results documented.                              |
 | `data/spot_check_100/`      | 🗑️ Discard                           | 100-PDF sample + `_results.json`. The `0d`/`0e` scripts reference `_results.json` but those are prototype scripts themselves. |
@@ -197,8 +206,9 @@ unless the NARA catalog is updated and we want fresh metadata.
 | `data/vlm_quant_benchmark/` | 🗑️ Discard                           | 10-sample quantization benchmark output. Decision made.                                                                       |
 | `data/_unused/`             | 🗑️ Discard                           | Old `catalog.db` and `01b_excel.db` from early development. Superseded by `/database/catalog.db`.                             |
 
-**The only folder in `/data` worth keeping is `01_shotlist_raw/`.** Everything
-else is prototype evaluation material whose decisions have already been made.
+**The only folders in `/data` worth keeping are `01_shotlist_raw/` and
+`01c_llm_ocr/`.** Everything else is prototype evaluation material whose
+decisions have already been made.
 
 The prototype scripts (`0_*`) arguably belong in a `scripts/archive/` or
 `scripts/prototype/` subfolder rather than mixed in with active pipeline scripts —

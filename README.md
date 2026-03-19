@@ -23,24 +23,28 @@ uv sync
 
 See [docs/pipeline-plan.md](docs/pipeline-plan.md) for the full plan.
 
-| Stage | Script                              | Status  |
-| ----- | ----------------------------------- | ------- |
-| 0     | `scripts/0_spot_check_marker.py`    | Done    |
-| 1     | `scripts/1_ingest_shotlist_pdfs.py` | Planned |
-| 1b    | `scripts/1b_ingest_excel.py`        | Planned |
-| 2     | `scripts/2_parse_shotlists.py`      | Planned |
-| 3     | `scripts/3_discover_videos.py`      | Planned |
-| 4     | `scripts/4_analyze_video.py`        | Planned |
-| 5     | `scripts/5_merge_catalog.py`        | Planned |
-| 6     | `scripts/6_identify_faces.py`       | Planned |
-| 7     | `scripts/7_build_search_index.py`   | Planned |
-| 8     | `scripts/8_incremental_update.py`   | Planned |
+| Stage | Script                                       | Status  |
+| ----- | -------------------------------------------- | ------- |
+| 0     | `scripts/shotlist/0_spot_check_marker.py`    | Done    |
+| 1a    | `scripts/shotlist/1a_marker_ocr.py`          | Done    |
+| 1b    | `scripts/shotlist/1b_match_shotlist_pdfs.py` | Done    |
+| 1b    | `scripts/one_time/1b_ingest_*.py`            | Done    |
+| 1c    | `scripts/shotlist/1c_llm_ocr.py`             | Done    |
+| 1c    | `scripts/1c_verify_transfers.py`             | Done    |
+| 1d    | `scripts/shotlist/1d_build_fts_index.py`     | Done    |
+| 1d    | `scripts/1d_ffprobe_metadata.py`             | Done    |
+| 2     | `scripts/2_parse_shotlists.py`               | Planned |
+| 4     | `scripts/4_analyze_video.py`                 | Planned |
 
 ## Project Structure
 
 ```
-scripts/     # Numbered pipeline scripts
-docs/        # Pipeline plan and documentation
-data/        # All output data (gitignored)
-input_indexes/  # Source shotlist PDFs
+scripts/         # Numbered pipeline scripts
+scripts/shotlist/  # OCR, matching, FTS5 index
+scripts/one_time/  # Rebuild / ingest tools
+docs/            # Pipeline plan and documentation
+data/            # All output data (gitignored)
+database/        # catalog.db (SQLite — source of truth)
+input_indexes/   # Source spreadsheets & metadata
+static_assets/   # Shotlist PDFs
 ```
