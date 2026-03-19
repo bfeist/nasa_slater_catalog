@@ -283,10 +283,17 @@ router.get("/:file_id/stream", (req, res) => {
     const tcRate = probe?.video_frame_rate ?? String(Math.round(fps));
     drawtextContent = `timecode='${tcEscaped}':timecode_rate=${tcRate}`;
   } else {
-    // No timecode track: show frame number and PTS relative to file start.
-    // drawtext's start_number shifts %{frame_num} to the seek offset.
-    const startNumberOpt = frameOffset > 0 ? `:start_number=${frameOffset}` : "";
-    drawtextContent = `text='F%{frame_num}T%{pts}'${startNumberOpt}`;
+    // No timecode track: synthesize one starting from 00:00:00:00 (NDF).
+    let startTc = "00:00:00:00";
+    if (frameOffset > 0 && fps > 0) {
+      // Advance the synthetic TC by the seek offset so the first rendered frame
+      // shows the correct position within the file.
+      startTc = frameCountToTc(frameOffset, fps, false); // false = NDF
+    }
+    const tcEscaped = startTc.replace(/:/g, "\\:");
+    // Use the stored rational frame-rate string directly as timecode_rate.
+    const tcRate = probe?.video_frame_rate ?? String(Math.round(fps));
+    drawtextContent = `timecode='${tcEscaped}':timecode_rate=${tcRate}`;
   }
 
   const watermark =
