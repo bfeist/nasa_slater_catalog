@@ -104,26 +104,39 @@ export const config = {
     process.env.WATERMARK_FONT_PATH ??
     (process.platform === "win32"
       ? "C:/Windows/Fonts/arial.ttf"
-      : "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"),
+      : "/usr/share/fonts/dejavu/DejaVuSans.ttf"),
 
   /** Monospace font used for timecode / frame-number watermark burn-in.
    *  Lucida Console (lucon.ttf) on Windows — thin, clean, sans-serif monospace
    *  with a technical/instrument character; ships on Windows 95+.
-   *  DejaVu Sans Mono on Linux. */
+   *  DejaVu Sans Mono on Linux (Alpine: /usr/share/fonts/dejavu/). */
   watermarkMonoFontPath:
     process.env.WATERMARK_MONO_FONT_PATH ??
     (process.platform === "win32"
       ? "C:/Windows/Fonts/lucon.ttf"
-      : "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"),
+      : "/usr/share/fonts/dejavu/DejaVuSansMono.ttf"),
+
+  /**
+   * H.264 encoder used for video transcoding.
+   * Override with VIDEO_ENCODER env var.
+   * Default: h264_nvenc (GPU) on Windows, libx264 (CPU) on Linux/Docker
+   * since Alpine's stock ffmpeg has no NVENC support.
+   */
+  videoEncoder:
+    process.env.VIDEO_ENCODER ?? (process.platform === "win32" ? "h264_nvenc" : "libx264"),
 
   /** Built Vite SPA assets (served by Express in production) */
   viteDistDir: process.env.VITE_DIST_DIR ?? fromRoot(".local", "vite", "dist"),
 
-  /** HMAC key used to derive Slater numbers from identifiers */
-  slaterSecret: process.env.SLATER_SECRET ?? "nasa-slater-default-hmac-key",
+  /**
+   * Whether Express should serve the Vite SPA in production mode.
+   * Set SERVE_FRONTEND=false in Docker when Nginx is serving the SPA instead.
+   * Defaults to true (Express serves the SPA when NODE_ENV=production).
+   */
+  serveFrontend: process.env.SERVE_FRONTEND !== "false",
 
-  /** Shared secret that unlocks real identifiers (empty = always revealed) */
-  revealSecret: process.env.REVEAL_SECRET ?? "",
+  /** HMAC key used to derive Slater numbers from identifiers */
+  slaterSecret: process.env.SLATER_SECRET ?? "slater-film-default-hmac-key",
 } as const;
 
 export type Config = typeof config;

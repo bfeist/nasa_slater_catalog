@@ -1,4 +1,4 @@
-# NASA Slater Catalog
+# Slater Film Catalog
 
 AI-powered cataloging pipeline for archival US space program video footage using local GPU inference (RTX 4090).
 

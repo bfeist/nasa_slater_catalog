@@ -17,7 +17,7 @@ export default function Layout(): JSX.Element {
     <div className={styles.layout}>
       <header className={styles.header}>
         <Link to="/" className={styles.title}>
-          NASA Slater Film Catalog
+          Slater Film Catalog
         </Link>
         <nav className={styles.nav}>
           <Link to="/" className={styles.navLink}>

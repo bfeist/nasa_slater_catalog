@@ -1,4 +1,4 @@
-# NASA Slater Catalog — Pipeline Plan
+# Slater Film Catalog — Pipeline Plan
 
 ## Overview
 

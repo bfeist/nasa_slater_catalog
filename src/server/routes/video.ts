@@ -20,8 +20,31 @@ const router = Router();
 // logical second 0 corresponds to physical second 10 in the file.
 // ---------------------------------------------------------------------------
 
-const NARA_PROXY_ROOT = path.normalize("O:\\MPEG-Proxies\\NARA").toLowerCase();
+// NARA_PROXY_ROOT is compared against fully-resolved lowercase paths.
+// On Linux/Docker the O:\ drive maps to config.videoArchiveRoot (/archive).
+const NARA_PROXY_ROOT =
+  process.platform === "win32"
+    ? path.normalize("O:\\MPEG-Proxies\\NARA").toLowerCase()
+    : config.videoArchiveRoot + "/mpeg-proxies/nara";
 const NARA_LEADER_SECS = 10;
+
+/**
+ * Resolve a DB folder_root + rel_path to an absolute file path.
+ * On Linux/Docker, Windows-style drive letter prefixes (e.g. O:\, O:/) are
+ * remapped to the configured archive mount root so containers can find files
+ * whose paths were recorded on the Windows host.
+ */
+function resolveFilePath(folderRoot: string, relPath: string): string {
+  if (process.platform === "win32") {
+    return path.join(folderRoot, relPath);
+  }
+  // Replace leading drive letter + colon (e.g. "O:/" or "O:\\") with the
+  // archive root, then normalise remaining backslashes to forward slashes.
+  const remapped = folderRoot
+    .replace(/^[A-Za-z]:[/\\]/, config.videoArchiveRoot + "/")
+    .replace(/\\/g, "/");
+  return path.join(remapped, relPath);
+}
 
 // ---------------------------------------------------------------------------
 // Timecode helpers — used for watermark burn-in when the source has a TC track
@@ -227,8 +250,11 @@ router.get("/:file_id/stream", (req, res) => {
     return;
   }
 
-  const fullPath = path.join(file.folder_root, file.rel_path);
+  const fullPath = resolveFilePath(file.folder_root, file.rel_path);
   if (!fs.existsSync(fullPath)) {
+    console.error(
+      `[video-stream] File not found on disk: ${fullPath} (folder_root=${file.folder_root})`
+    );
     res.status(404).send("File not found on disk");
     return;
   }
@@ -256,7 +282,7 @@ router.get("/:file_id/stream", (req, res) => {
 
   const codec = probe?.video_codec ?? "unknown";
   console.log(
-    `[${new Date().toISOString()}] [video-stream] Transcoding ${fullPath} (${codec}) → mp4/h264 + watermark, start=${startSecs}s${isNaraProxy ? ` (NARA proxy: physical seek=${effectiveStartSecs}s)` : ""}, streamId=${streamId || "(none)"}`
+    `[${new Date().toISOString()}] [video-stream] Transcoding ${fullPath} (${codec}) → mp4/${config.videoEncoder} + watermark, start=${startSecs}s${isNaraProxy ? ` (NARA proxy: physical seek=${effectiveStartSecs}s)` : ""}, streamId=${streamId || "(none)"}`
   );
 
   res.writeHead(200, {
@@ -343,7 +369,7 @@ router.get("/:file_id/stream", (req, res) => {
     "-vf",
     watermark,
     "-c:v",
-    "h264_nvenc",
+    config.videoEncoder,
     "-preset",
     "fast",
     "-c:a",
@@ -403,7 +429,10 @@ router.get("/:file_id/stream", (req, res) => {
     }
     cleanup("ffmpeg error");
   });
-  ffmpeg.on("close", () => {
+  ffmpeg.on("close", (code) => {
+    if (code !== 0) {
+      console.error(`[ffmpeg] process exited with code ${code} for ${fullPath}`);
+    }
     res.end();
     if (streamId) {
       const s = activeStreams.get(streamId);

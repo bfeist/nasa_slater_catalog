@@ -35,8 +35,9 @@ export function createApp(): express.Application {
 
   // ---------------------------------------------------------------------------
   // Production: serve the built Vite SPA
+  // Skipped when SERVE_FRONTEND=false (Docker mode: Nginx handles the SPA)
   // ---------------------------------------------------------------------------
-  if (config.isProd) {
+  if (config.isProd && config.serveFrontend) {
     const distDir = config.viteDistDir;
     if (fs.existsSync(distDir)) {
       app.use(express.static(distDir));

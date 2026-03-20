@@ -26,7 +26,7 @@ export default defineConfig({
         changeOrigin: true,
       },
     },
-    allowedHosts: ["localhost", "nasaslatercatalog.benfeist.com"],
+    allowedHosts: ["localhost", "slaterfilmcatalog.benfeist.com"],
   },
   resolve: {
     alias: {

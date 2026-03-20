@@ -14,10 +14,10 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   import.meta.url
 ).toString();
 
-/** Read the reveal key from session storage (returns empty string when absent). */
-function getRevealKey(): string {
+/** Read the session auth token from session storage (returns empty string when absent). */
+function getAuthToken(): string {
   try {
-    return sessionStorage.getItem("revealKey") ?? "";
+    return sessionStorage.getItem("authToken") ?? "";
   } catch {
     return "";
   }
@@ -32,7 +32,7 @@ interface ShotlistPdfViewerProps {
 /**
  * Modal overlay that renders shotlist PDFs via react-pdf (canvas-based).
  * No browser PDF viewer chrome means no built-in download button.
- * Tab labels are hidden from unauthenticated users (no revealKey).
+ * Tab labels are shown with real filenames for authenticated users.
  */
 export default function ShotlistPdfViewer({
   identifier,
@@ -45,8 +45,8 @@ export default function ShotlistPdfViewer({
   const bodyRef = useRef<HTMLDivElement>(null);
   const [pageWidth, setPageWidth] = useState<number>(800);
 
-  const revealKey = getRevealKey();
-  const isAuthed = revealKey !== "";
+  const authToken = getAuthToken();
+  const isAuthed = authToken !== "";
 
   // Measure the body container on mount so the Page fills the available width.
   useEffect(() => {
@@ -63,7 +63,7 @@ export default function ShotlistPdfViewer({
       activePdf
         ? {
             url: shotlistPdfUrl(activePdf),
-            httpHeaders: isAuthed ? { "X-Reveal-Key": revealKey } : {},
+            httpHeaders: isAuthed ? { Authorization: `Bearer ${authToken}` } : {},
           }
         : null,
     // eslint-disable-next-line react-hooks/exhaustive-deps

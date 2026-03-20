@@ -1,4 +1,4 @@
-# Semantic Search Research — NASA Slater Catalog
+# Semantic Search Research — Slater Film Catalog
 
 ## Current State
 

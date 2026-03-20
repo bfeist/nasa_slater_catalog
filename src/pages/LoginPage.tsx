@@ -52,7 +52,7 @@ export default function LoginPage(): JSX.Element {
   return (
     <div className={styles.loginPage}>
       <div className={styles.card}>
-        <h1 className={styles.heading}>NASA Slater Film Catalog</h1>
+        <h1 className={styles.heading}>Slater Film Catalog</h1>
         <p className={styles.subtitle}>Sign in to access the catalog</p>
         <form onSubmit={handleSubmit} className={styles.form}>
           <label className={styles.label} htmlFor="login-username">

@@ -9,7 +9,7 @@ import { closeDb } from "./db.js";
 const app = createApp();
 
 const server = app.listen(config.port, "0.0.0.0", () => {
-  console.log(`\n  NASA Slater Catalog API`);
+  console.log(`\n  Slater Film Catalog API`);
   console.log(`  Environment:  ${config.env}`);
   console.log(`  Listening:    http://127.0.0.1:${config.port}`);
   console.log(`  Database:     ${config.dbPath}`);

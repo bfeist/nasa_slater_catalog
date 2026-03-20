@@ -1,4 +1,4 @@
-# NASA Slater Film Catalog — Copilot Instructions
+# Slater Film Catalog — Copilot Instructions
 
 ## What This Is
 

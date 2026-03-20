@@ -1,5 +1,5 @@
 [project]
-name = "nasa-slater-catalog"
+name = "slater-film-catalog"
 version = "0.1.0"
 description = "Cataloging pipeline for NASA archival video using local GPU inference"
 readme = "README.md"

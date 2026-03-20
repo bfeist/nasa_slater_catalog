@@ -95,22 +95,13 @@ export function resolveIdentifier(slaterOrIdent: string): string | null {
 /**
  * Does the current request carry a valid session with "full" role?
  * Checks the Authorization: Bearer <token> header, falling back to the
- * legacy X-Reveal-Key / ?reveal= query param for backwards compatibility.
+ * Returns true when the request carries a valid Bearer session token with role="full".
  */
 export function isRevealed(req: Request): boolean {
-  // New session-based auth: check Authorization header
   const authHeader = req.headers.authorization;
-  if (authHeader) {
-    const m = authHeader.match(/^Bearer\s+(\S+)$/i);
-    if (m) {
-      const session = getSession(m[1]);
-      if (session) return session.role === "full";
-    }
-  }
-
-  // Legacy: X-Reveal-Key header or ?reveal= query param
-  if (!config.revealSecret) return true;
-  const key =
-    (req.headers["x-reveal-key"] as string | undefined) ?? (req.query.reveal as string | undefined);
-  return !!key && key === config.revealSecret;
+  if (!authHeader) return false;
+  const m = authHeader.match(/^Bearer\s+(\S+)$/i);
+  if (!m) return false;
+  const session = getSession(m[1]);
+  return !!session && session.role === "full";
 }

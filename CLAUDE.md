@@ -1,4 +1,4 @@
-# NASA Slater Film Catalog
+# Slater Film Catalog
 
 Read-only catalog of ~12,000 NASA 16mm/35mm archival film reels. Users browse, search, and view metadata. Authenticated users (via `?key=SECRET` URL param → `sessionStorage.revealKey`) see real identifiers/filenames/paths; unauthenticated users see obfuscated data.
 
