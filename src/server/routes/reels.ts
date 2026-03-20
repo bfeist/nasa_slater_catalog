@@ -123,6 +123,26 @@ router.get("/", (req, res) => {
   const offset = (page - 1) * limit;
   const hasTransfer = req.query.has_transfer as string | undefined;
   const qualityBucket = req.query.quality_bucket as string | undefined;
+  const reveal = isRevealed(req);
+
+  // For guests, precompute which reels have at least one file that is NOT
+  // shared across multiple reels (e.g. L00x proxy files on an LTO tape).
+  // Reels whose only files are shared will show has_transfer_on_disk = 0.
+  let guestTransferReels: Set<string> | null = null;
+  if (!reveal) {
+    const visibleRows = d
+      .prepare(
+        `SELECT DISTINCT tfm.reel_identifier
+         FROM transfer_file_matches tfm
+         WHERE tfm.file_id NOT IN (
+           SELECT file_id FROM transfer_file_matches
+           GROUP BY file_id
+           HAVING COUNT(DISTINCT reel_identifier) > 1
+         )`
+      )
+      .all() as { reel_identifier: string }[];
+    guestTransferReels = new Set(visibleRows.map((r) => r.reel_identifier));
+  }
 
   // Order to pick the "best" available file: ProRes > H.264 > MPEG > other,
   // then widest resolution first.
@@ -189,10 +209,15 @@ router.get("/", (req, res) => {
       )
       .all(...filterParams, limit, offset);
 
-    const reveal = isRevealed(req);
     const mapped = (rows as { identifier: string }[]).map((r) => {
       const slater_number = toSlater(r.identifier);
-      return reveal ? { ...r, slater_number } : { ...r, identifier: slater_number, slater_number };
+      const guestDisk =
+        guestTransferReels !== null
+          ? { has_transfer_on_disk: guestTransferReels.has(r.identifier) ? 1 : 0 }
+          : {};
+      return reveal
+        ? { ...r, slater_number }
+        : { ...r, identifier: slater_number, slater_number, ...guestDisk };
     });
     res.json({ total: countRow.c, page, limit, rows: mapped, revealed: reveal });
     return;
@@ -254,12 +279,15 @@ router.get("/", (req, res) => {
         )
         .all(ftsQuery, ...filterParams, limit, offset);
 
-      const reveal = isRevealed(req);
       const mapped = (rows as { identifier: string }[]).map((r) => {
         const slater_number = toSlater(r.identifier);
+        const guestDisk =
+          guestTransferReels !== null
+            ? { has_transfer_on_disk: guestTransferReels.has(r.identifier) ? 1 : 0 }
+            : {};
         return reveal
           ? { ...r, slater_number }
-          : { ...r, identifier: slater_number, slater_number };
+          : { ...r, identifier: slater_number, slater_number, ...guestDisk };
       });
       res.json({ total: countRow.c, page, limit, rows: mapped, revealed: reveal, search: "fts5" });
       return;
@@ -333,13 +361,16 @@ router.get("/", (req, res) => {
     )
     .all(...params, limit, offset);
 
-  const reveal = isRevealed(req);
   const mapped = (rows as { identifier: string }[]).map((r) => {
     const slater_number = toSlater(r.identifier);
+    const guestDisk =
+      guestTransferReels !== null
+        ? { has_transfer_on_disk: guestTransferReels.has(r.identifier) ? 1 : 0 }
+        : {};
     if (reveal) {
       return { ...r, slater_number };
     }
-    return { ...r, identifier: slater_number, slater_number };
+    return { ...r, identifier: slater_number, slater_number, ...guestDisk };
   });
 
   res.json({ total, page, limit, rows: mapped, revealed: reveal, search: q ? "like" : "none" });
