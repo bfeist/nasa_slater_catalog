@@ -5,7 +5,7 @@ import { useAuth } from "../lib/AuthContext";
 import styles from "./Layout.module.css";
 
 export default function Layout(): JSX.Element {
-  const { logout, username } = useAuth();
+  const { logout, username, role } = useAuth();
   const navigate = useNavigate();
 
   function handleLogout() {
@@ -26,9 +26,14 @@ export default function Layout(): JSX.Element {
           <Link to="/stats" className={styles.navLink}>
             Stats
           </Link>
+          {role === "super" && (
+            <Link to="/admin" className={styles.navLink}>
+              Admin
+            </Link>
+          )}
         </nav>
         <div className={styles.headerActions}>
-          {username && <span className={styles.navLink}>{username}</span>}
+          {username && <span className={styles.navLink}> Welcome, {username}</span>}
           <button type="button" className={styles.authBtn} onClick={handleLogout}>
             Logout
           </button>

@@ -22,8 +22,8 @@
 
   /* Text */
   --color-text-primary: #e6edf3;
-  --color-text-secondary: #8b949e;
-  --color-text-muted: #6e7681;
+  --color-text-secondary: #9ca4ad;
+  --color-text-muted: #848d97;
   --color-text-on-emphasis: #ffffff;
 
   /* Links */
@@ -81,6 +81,10 @@
   --quality-proxy-bg: rgb(139 148 158 / 15%);
   --quality-proxy-fg: #8b949e;
   --quality-proxy-border: rgb(139 148 158 / 40%);
+
+  /* Typography */
+  --font-wordmark: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "Roboto Mono", "Cascadia Code", "Fira Code", monospace;
 
   /* Layout */
   --layout-max-width: 1400px;

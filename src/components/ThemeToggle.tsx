@@ -1,5 +1,7 @@
 import type { JSX } from "react";
 import * as Switch from "@radix-ui/react-switch";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSun, faMoon } from "@fortawesome/free-solid-svg-icons";
 import { useTheme } from "../lib/ThemeContext";
 import styles from "./ThemeToggle.module.css";
 
@@ -8,9 +10,7 @@ export default function ThemeToggle(): JSX.Element {
 
   return (
     <div className={styles.themeToggle}>
-      <span className={styles.icon} aria-hidden>
-        ☀️
-      </span>
+      <FontAwesomeIcon icon={faSun} className={styles.icon} aria-hidden />
       <Switch.Root
         className={styles.switchRoot}
         checked={theme === "dark"}
@@ -19,9 +19,7 @@ export default function ThemeToggle(): JSX.Element {
       >
         <Switch.Thumb className={styles.switchThumb} />
       </Switch.Root>
-      <span className={styles.icon} aria-hidden>
-        🌙
-      </span>
+      <FontAwesomeIcon icon={faMoon} className={styles.icon} aria-hidden />
     </div>
   );
 }

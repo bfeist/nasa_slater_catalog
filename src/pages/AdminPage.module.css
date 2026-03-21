@@ -1,0 +1,428 @@
+.adminPage {
+  padding: 2rem 0;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.heading {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 0.25rem;
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 1.5rem;
+}
+
+/* ---- Tabs ---- */
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+.tab {
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  padding: 0.6rem 1rem 0.75rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all var(--transition-fast);
+  position: relative;
+  bottom: -1px;
+}
+
+.tab:hover {
+  color: var(--color-text-primary);
+}
+
+.activeTab {
+  color: var(--color-text-primary);
+  border-bottom-color: var(--color-link);
+}
+
+/* ---- Roles reference table ---- */
+
+.rolesReference {
+  margin-bottom: 1.25rem;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.rolesTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.rolesTable th,
+.rolesTable td {
+  padding: 0.5rem 1rem;
+  text-align: left;
+}
+
+.rolesTable th {
+  background: var(--color-bg-surface);
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+.rolesTable td {
+  color: var(--color-text-secondary);
+  border-bottom: 1px solid var(--color-border-muted);
+}
+
+.rolesTable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.rolesTable tbody tr:hover td {
+  background: var(--color-bg-surface);
+}
+
+/* ---- User table ---- */
+
+.tableWrap {
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 0.6rem 1rem;
+}
+
+.table th {
+  background: var(--color-bg-surface);
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+.table td {
+  border-bottom: 1px solid var(--color-border-muted);
+  color: var(--color-text-primary);
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.table tr:hover td {
+  background: var(--color-bg-surface);
+}
+
+.roleBadge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.15em 0.55em;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.roleSuper {
+  background: rgb(255 166 0 / 15%);
+  color: #ffa600;
+}
+
+.roleFull {
+  background: rgb(88 166 255 / 15%);
+  color: #58a6ff;
+}
+
+.roleGuest {
+  background: rgb(139 148 158 / 15%);
+  color: #8b949e;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.editBtn,
+.deleteBtn {
+  background: transparent;
+  border: 1px solid var(--color-border-default);
+  color: var(--color-text-secondary);
+  padding: 0.2em 0.6em;
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.suspendBtn {
+  background: transparent;
+  border: 1px solid var(--color-border-default);
+  color: var(--color-text-secondary);
+  padding: 0.2em 0.6em;
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.enableBtn {
+  background: transparent;
+  border: 1px solid rgb(63 185 80 / 40%);
+  color: var(--color-text-secondary);
+  padding: 0.2em 0.6em;
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.editBtn:hover {
+  background: var(--color-btn-hover-bg);
+  color: var(--color-text-primary);
+}
+
+.suspendBtn:hover {
+  background: rgb(255 166 0 / 12%);
+  color: #ffa600;
+  border-color: #ffa600;
+}
+
+.enableBtn:hover {
+  background: rgb(63 185 80 / 25%);
+  border-color: #3fb950;
+  color: #3fb950;
+}
+
+.deleteBtn:hover {
+  background: var(--color-danger-subtle);
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+/* ---- Suspended row ---- */
+
+.suspendedRow td {
+  opacity: 0.55;
+}
+
+.suspendedRow .enableBtn,
+.suspendedRow .suspendBtn {
+  opacity: 1;
+}
+
+.addBtn {
+  background: var(--color-btn-primary-bg);
+  border: 1px solid transparent;
+  color: #ffffff;
+  padding: 0.45em 1em;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  margin-bottom: 1rem;
+}
+
+.addBtn:hover {
+  background: var(--color-btn-primary-hover-bg);
+}
+
+/* ---- Dialog (modal) ---- */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgb(0 0 0 / 50%);
+}
+
+.dialogContent {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 201;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-overlay);
+  width: calc(100% - 2rem);
+  max-width: 400px;
+  padding: 1.5rem;
+}
+
+.dialogTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 1rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.label {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: var(--color-bg-input, var(--color-bg-subtle));
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  font-size: 0.9375rem;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.input:focus {
+  border-color: var(--color-link);
+}
+
+.select {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: var(--color-bg-input, var(--color-bg-subtle));
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  font-size: 0.9375rem;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.select:focus {
+  border-color: var(--color-link);
+}
+
+.dialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.cancelBtn {
+  background: transparent;
+  border: 1px solid var(--color-border-default);
+  color: var(--color-text-secondary);
+  padding: 0.4em 1em;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.cancelBtn:hover {
+  background: var(--color-btn-hover-bg);
+  color: var(--color-text-primary);
+}
+
+.saveBtn {
+  background: var(--color-btn-primary-bg);
+  border: 1px solid transparent;
+  color: #ffffff;
+  padding: 0.4em 1em;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.saveBtn:hover {
+  background: var(--color-btn-primary-hover-bg);
+}
+
+.saveBtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.errorMsg {
+  color: var(--color-danger);
+  font-size: 0.8125rem;
+  margin: 0;
+}
+
+.emptyState {
+  text-align: center;
+  color: var(--color-text-muted);
+  padding: 2rem 1rem;
+}
+
+/* ---- Confirm delete dialog ---- */
+
+.confirmText {
+  color: var(--color-text-secondary);
+  font-size: 0.9375rem;
+  margin: 0 0 1rem;
+  line-height: 1.5;
+}
+
+.confirmUser {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.dangerBtn {
+  background: var(--color-danger);
+  border: 1px solid transparent;
+  color: #ffffff;
+  padding: 0.4em 1em;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+
+.dangerBtn:hover {
+  opacity: 0.85;
+}

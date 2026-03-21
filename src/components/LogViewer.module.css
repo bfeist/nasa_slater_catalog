@@ -1,0 +1,170 @@
+.logViewer {
+  padding: 0;
+}
+
+/* ---- Toolbar ---- */
+
+.toolbar {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.select {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--color-border-default);
+  border-radius: 4px;
+  background: var(--color-bg-surface);
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  font-family: inherit;
+  cursor: pointer;
+  min-width: 180px;
+  max-width: 360px;
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+/* ---- Error ---- */
+
+.error {
+  color: var(--color-danger);
+  font-size: 0.8125rem;
+  margin: 0 0 0.75rem;
+}
+
+/* ---- Log table ---- */
+
+.tableWrap {
+  border: 1px solid var(--color-border-default);
+  border-radius: 4px;
+  overflow: hidden;
+  overflow-y: auto;
+  max-height: 520px;
+  background: var(--color-bg-inset);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--color-bg-surface);
+  color: var(--color-text-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.45rem 0.75rem;
+  border-bottom: 1px solid var(--color-border-default);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.table tbody tr {
+  border-bottom: 1px solid var(--color-border-muted);
+}
+
+.table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.table tbody tr:hover {
+  background: var(--color-bg-surface);
+}
+
+.table td {
+  padding: 0.35rem 0.75rem;
+  vertical-align: middle;
+}
+
+/* ---- Column classes ---- */
+
+.tdTime {
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  font-family: monospace;
+  font-size: 0.75rem;
+  width: 6rem;
+}
+
+.action {
+  white-space: nowrap;
+  font-family: monospace;
+  font-size: 0.75rem;
+}
+
+.tdUser {
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  width: 5rem;
+}
+
+.tdId {
+  color: var(--color-text-primary);
+  font-family: monospace;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  width: 7rem;
+}
+
+.tdDetails {
+  color: var(--color-text-muted);
+  font-family: monospace;
+  font-size: 0.75rem;
+}
+
+/* ---- Action color variants ---- */
+
+.actionView {
+  color: var(--color-text-secondary);
+}
+
+.actionPlay {
+  color: var(--color-accent);
+}
+
+.actionStop {
+  color: var(--color-text-muted);
+}
+
+.actionAuth {
+  color: var(--color-success);
+}
+
+.actionSearch {
+  color: var(--color-link);
+}
+
+.actionAdmin {
+  color: #ffa600;
+}
+
+/* ---- Empty state ---- */
+
+.empty {
+  text-align: center;
+  color: var(--color-text-muted);
+  padding: 2rem;
+  font-style: italic;
+}
+
+/* ---- Loading ---- */
+
+.loadingMsg {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  padding: 0.5rem 0;
+  margin: 0;
+}

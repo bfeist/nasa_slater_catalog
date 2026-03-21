@@ -33,7 +33,7 @@ router.get("/:filename", (req, res) => {
 
   const stat = fs.statSync(pdfPath);
   logActivity({
-    action: "generate_shotlist_pdf",
+    action: "read_shotlist_pdf",
     username: getRequestUser(req),
     details: `file=${filename}`,
   });

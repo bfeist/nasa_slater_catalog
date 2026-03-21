@@ -10,12 +10,13 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
-export type UserRole = "full" | "guest";
+export type UserRole = "super" | "full" | "guest";
 
-interface UserEntry {
+export interface UserEntry {
   username: string;
   password: string;
   role: UserRole;
+  suspended?: boolean;
 }
 
 interface AuthConfig {
@@ -134,7 +135,7 @@ function verifyToken(token: string): Session | null {
 
   if (typeof data.u !== "string" || typeof data.r !== "string" || typeof data.e !== "number")
     return null;
-  if (data.r !== "full" && data.r !== "guest") return null;
+  if (data.r !== "super" && data.r !== "full" && data.r !== "guest") return null;
   if (Date.now() > data.e) return null;
 
   return { username: data.u, role: data.r };
@@ -152,14 +153,26 @@ export function authenticate(
   const user = config.users.find((u) => u.username.toLowerCase() === username.toLowerCase().trim());
   if (!user) return null;
   if (user.password !== password) return null;
+  if (user.suspended) return null;
 
   const token = createToken(user.username, user.role);
   return { token, username: user.username, role: user.role };
 }
 
-/** Verify a token and return the session. Returns null if invalid or expired. */
+/** Verify a token and return the session. Returns null if invalid, expired, revoked, or suspended. */
 export function getSession(token: string): Session | null {
-  return verifyToken(token);
+  const decoded = verifyToken(token);
+  if (!decoded) return null;
+
+  // Hydrate live user state so role changes and suspensions take effect immediately
+  const config = getAuthConfig();
+  const user = config.users.find(
+    (u) => u.username.toLowerCase() === decoded.username.toLowerCase()
+  );
+  if (!user) return null;
+  if (user.suspended) return null;
+
+  return { username: user.username, role: user.role };
 }
 
 /** Revoke a token (logout). The token will be rejected until it naturally expires. */
@@ -167,4 +180,58 @@ export function destroySession(token: string): void {
   revokedTokens.add(token);
   // Auto-clear after SESSION_TTL_MS to keep the set small
   setTimeout(() => revokedTokens.delete(token), SESSION_TTL_MS).unref();
+}
+
+// ---------------------------------------------------------------------------
+// Admin helpers — read/write auth.config.json user list
+// ---------------------------------------------------------------------------
+
+/** Return all users (without the signing secret). */
+export function listUsers(): UserEntry[] {
+  return getAuthConfig().users;
+}
+
+/** Persist an updated user list back to auth.config.json, preserving the secret. */
+function saveUsers(users: UserEntry[]): void {
+  const config = getAuthConfig();
+  const updated = { ...config, users };
+  fs.writeFileSync(AUTH_CONFIG_PATH, JSON.stringify(updated, null, 2) + "\n", "utf-8");
+}
+
+/** Add a new user. Returns false if username already exists. */
+export function addUser(entry: UserEntry): boolean {
+  const config = getAuthConfig();
+  const exists = config.users.some(
+    (u) => u.username.toLowerCase() === entry.username.toLowerCase()
+  );
+  if (exists) return false;
+  saveUsers([...config.users, entry]);
+  return true;
+}
+
+/** Update an existing user. Returns false if user not found. */
+export function updateUser(
+  username: string,
+  updates: Partial<Pick<UserEntry, "password" | "role" | "suspended">>
+): boolean {
+  const config = getAuthConfig();
+  const idx = config.users.findIndex((u) => u.username.toLowerCase() === username.toLowerCase());
+  if (idx === -1) return false;
+  const user = { ...config.users[idx] };
+  if (updates.password !== undefined) user.password = updates.password;
+  if (updates.role !== undefined) user.role = updates.role;
+  if (updates.suspended !== undefined) user.suspended = updates.suspended;
+  const users = [...config.users];
+  users[idx] = user;
+  saveUsers(users);
+  return true;
+}
+
+/** Delete a user by username. Returns false if user not found. */
+export function deleteUser(username: string): boolean {
+  const config = getAuthConfig();
+  const filtered = config.users.filter((u) => u.username.toLowerCase() !== username.toLowerCase());
+  if (filtered.length === config.users.length) return false;
+  saveUsers(filtered);
+  return true;
 }

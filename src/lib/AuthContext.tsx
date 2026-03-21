@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 
-export type UserRole = "full" | "guest";
+export type UserRole = "super" | "full" | "guest";
 
 interface AuthContextValue {
   isAuthenticated: boolean;
@@ -40,7 +40,7 @@ function getStoredUsername(): string | null {
 function getStoredRole(): UserRole | null {
   try {
     const r = globalThis.sessionStorage?.getItem("authRole") ?? null;
-    return r === "full" || r === "guest" ? r : null;
+    return r === "super" || r === "full" || r === "guest" ? r : null;
   } catch {
     return null;
   }

@@ -48,11 +48,19 @@ export default function ReelDetailContent({ data }: ReelDetailContentProps): JSX
       <section className={styles.headerSection}>
         <h2>{reel.identifier}</h2>
         {(() => {
-          const displayTitle = revealed ? reel.title : (reel.alternate_title ?? reel.title);
-          return displayTitle ? <p className={styles.reelTitle}>{displayTitle}</p> : null;
+          if (revealed) {
+            // Revealed users: show original title as main
+            const mainTitle = reel.orig_title ?? reel.title;
+            return mainTitle ? <p className={styles.reelTitle}>{mainTitle}</p> : null;
+          } else {
+            // Guest users: show only alternate title
+            return reel.alternate_title ? (
+              <p className={styles.reelTitle}>{reel.alternate_title}</p>
+            ) : null;
+          }
         })()}
-        {revealed && reel.orig_title && reel.orig_title !== reel.title && (
-          <p className="muted">Original title: {reel.orig_title}</p>
+        {revealed && reel.alternate_title && (
+          <p className="muted">Alternate title: {reel.alternate_title}</p>
         )}
 
         <dl className={styles.metaDl}>

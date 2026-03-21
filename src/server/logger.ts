@@ -130,7 +130,11 @@ export type ActivityAction =
   | "stop_video"
   | "auth_login"
   | "auth_logout"
-  | "search";
+  | "search"
+  | "admin_add_user"
+  | "admin_update_user"
+  | "admin_delete_user"
+  | "read_shotlist_pdf";
 
 interface ActivityEntry {
   action: ActivityAction;

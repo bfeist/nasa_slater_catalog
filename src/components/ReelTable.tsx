@@ -56,13 +56,13 @@ export default function ReelTable({ rows, onSelectReel, revealed }: ReelTablePro
             className={styles.clickableRow}
           >
             {revealed && (
-              <td>
+              <td className="mono-cell">
                 <button className={styles.identifierBtn} type="button">
                   {r.identifier}
                 </button>
               </td>
             )}
-            <td>{r.slater_number}</td>
+            <td className="mono-cell">{r.slater_number}</td>
             <td className={styles.titleCell}>
               {revealed ? (
                 <span className={styles.titleRevealed}>
@@ -88,7 +88,7 @@ export default function ReelTable({ rows, onSelectReel, revealed }: ReelTablePro
                 </span>
               )}
             </td>
-            <td>{r.date || "—"}</td>
+            <td className="mono-cell">{r.date || "—"}</td>
             <td>
               <QualityBadge
                 codec={r.best_quality_codec}

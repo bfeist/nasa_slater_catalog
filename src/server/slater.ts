@@ -98,7 +98,7 @@ export function resolveIdentifier(slaterOrIdent: string): string | null {
  */
 export function isRevealed(req: Request): boolean {
   const session = getRequestSession(req);
-  return !!session && session.role === "full";
+  return !!session && (session.role === "full" || session.role === "super");
 }
 
 /** Extract the session from a request's Bearer token or ?token= query param, or null if absent/invalid. */
