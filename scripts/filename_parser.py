@@ -204,8 +204,11 @@ def _build_candidates(raw: str) -> list[str]:
         normalized += char
         if i < len(raw) - 1:
             next_is_digit = raw[i + 1].isdigit()
-            # Insert hyphen at letter-to-digit transition if not already there.
-            if char.isalpha() and next_is_digit and normalized[-1] != "-":
+            # Insert hyphen at the first letter-to-digit transition only.
+            # This handles bare identifiers like "CL1438" → "CL-1438" without
+            # mangling alphanumeric suffixes like "FR-B133" (which already has
+            # a hyphen and must not become "FR-B-133").
+            if char.isalpha() and next_is_digit and "-" not in normalized:
                 normalized += "-"
 
     if "-" not in normalized:

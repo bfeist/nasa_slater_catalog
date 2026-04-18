@@ -172,6 +172,10 @@ export default function SearchPage(): JSX.Element {
     <div className={styles.searchPage}>
       {/* ---- Sticky toolbar: search bar + quality filters + result count ---- */}
       <div className={styles.searchToolbarSticky} ref={toolbarRef}>
+        <p className={styles.siteTagline}>
+          Browse and search thousands of archival film reels - view metadata, stream transfers, and
+          explore shotlists.
+        </p>
         <SearchBar
           initialQuery={q}
           initialHasTransfer={effectiveHasTransfer}

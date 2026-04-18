@@ -39,14 +39,18 @@ services:
     # Mount all runtime data as read-only bind mounts so the container never
     # writes to the host (archival safety: matches /o/ read-only policy).
     volumes:
-      # SQLite catalog database
-      - ./database:/app/database:ro
+      # SQLite catalog database — file mounted :ro so the container can never
+      # corrupt the data, but the parent directory remains writable so SQLite
+      # can create the WAL .db-shm coordination file it needs even on a
+      # readonly connection (WAL mode requires shm regardless of write intent).
+      - ./database/catalog.db:/app/database/catalog.db:ro
       # Shotlist PDFs
       - ./static_assets/shotlist_pdfs:/app/static_assets/shotlist_pdfs:ro
       # LLM OCR outputs
       - ./static_assets/llm_ocr:/app/static_assets/llm_ocr:ro
       # Auth credentials (contains passwords — never baked into image)
-      - ./auth.config.json:/app/auth.config.json:ro
+      # Must be writable so the admin API can add/remove users at runtime.
+      - ./auth.config.json:/app/auth.config.json
       # Activity logs (writable — persisted to host)
       - ./.local/dockerLogs:/app/logs
       # NASA video archive — Docker CIFS named volume (see top-level volumes: below).

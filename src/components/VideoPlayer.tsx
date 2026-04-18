@@ -99,18 +99,6 @@ export default function VideoPlayer({
     };
   }, [streamKey]);
 
-  const togglePlay = useCallback(() => {
-    const vid = videoRef.current;
-    if (!vid) return;
-    if (vid.paused) {
-      vid.play().catch(() => {});
-      setIsPlaying(true);
-    } else {
-      vid.pause();
-      setIsPlaying(false);
-    }
-  }, []);
-
   // --- Scrubber interaction ---
   const getScrubTime = useCallback(
     (clientX: number): number => {
@@ -133,6 +121,57 @@ export default function VideoPlayer({
     },
     [duration]
   );
+
+  const togglePlay = useCallback(() => {
+    const vid = videoRef.current;
+    if (!vid) return;
+    if (vid.paused) {
+      vid.play().catch(() => {});
+      setIsPlaying(true);
+    } else {
+      vid.pause();
+      setIsPlaying(false);
+    }
+  }, []);
+
+  // Skip forward/backward by a given number of seconds
+  const skip = useCallback(
+    (delta: number) => {
+      const newTime = Math.max(0, Math.min(duration, currentTime + delta));
+      commitSeek(newTime);
+    },
+    [currentTime, duration, commitSeek]
+  );
+
+  // Keyboard shortcuts — Space: play/pause, ←/→: ±5s, Shift+←/→: ±10s
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      // Don't capture if user is typing in an input
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        e.target instanceof HTMLSelectElement
+      )
+        return;
+
+      switch (e.key) {
+        case " ":
+          e.preventDefault();
+          togglePlay();
+          break;
+        case "ArrowLeft":
+          e.preventDefault();
+          skip(e.shiftKey ? -10 : -5);
+          break;
+        case "ArrowRight":
+          e.preventDefault();
+          skip(e.shiftKey ? 10 : 5);
+          break;
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [togglePlay, skip]);
 
   const onScrubPointerDown = useCallback(
     (e: React.PointerEvent) => {
@@ -206,10 +245,16 @@ export default function VideoPlayer({
           <span className={styles.time}>
             {formatDuration(displayTime)} / {formatDuration(duration || null)}
           </span>
+
+          <span className={styles.keyHints} title="Keyboard shortcuts">
+            <kbd>Space</kbd> play/pause &nbsp; <kbd>←</kbd>/<kbd>→</kbd> ±5s &nbsp; <kbd>Shift</kbd>
+            +<kbd>←</kbd>/<kbd>→</kbd> ±10s
+          </span>
         </div>
 
         <div className={styles.info}>
-          Streaming file #{fileId}. Seek restarts the transcode from the selected position.
+          Seeking re-encodes from the new position (may take a moment to buffer). The timecode
+          always reflects the absolute position in the source file.
         </div>
       </div>
     </div>

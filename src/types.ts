@@ -25,6 +25,8 @@ export interface FilmReel {
   best_quality_width: number | null;
   /** Best available copy: pixel height */
   best_quality_height: number | null;
+  /** 1 if any digital transfer file for this reel has an audio stream (from ffprobe). */
+  has_transfer_audio: number | null;
   rowid_excel: number | null;
   // Fields added by First Steps / NARA ingest
   nara_roll_number: string | null;

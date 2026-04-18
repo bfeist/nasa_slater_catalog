@@ -175,19 +175,32 @@ router.get("/", (req, res) => {
       ORDER BY ${BEST_QUALITY_ORDER}
       LIMIT 1)`;
 
+  // Returns 1 if any digital transfer file for this reel has an audio stream.
+  const hasTransferAudioSubquery = `(SELECT 1
+    FROM transfer_file_matches tfm
+    JOIN ffprobe_metadata ffp ON ffp.file_id = tfm.file_id
+    WHERE tfm.reel_identifier = fr.identifier
+      AND ffp.audio_codec IS NOT NULL
+    LIMIT 1) AS has_transfer_audio`;
+
   // ---------------------------------------------------------------------------
   // Determine search strategy: FTS5 (ranked) vs LIKE (fallback)
   // ---------------------------------------------------------------------------
   const useFts5 = q && hasFts5();
-  const isSfrLookup =
-    q &&
-    resolveIdentifier(q.trim()) !== null &&
-    resolveIdentifier(q.trim()) !== q.trim() &&
-    q.trim().startsWith("SFR-");
+
+  // For exact identifier lookups (either an SFR catalog ID or a direct identifier
+  // like "AK-020"), bypass FTS5 and do a precise identifier = ? match.
+  // resolveIdentifier maps SFR → real identifier; for direct identifiers it
+  // returns the string unchanged, so we also do a DB existence check.
+  const resolvedLookup = q ? resolveIdentifier(q.trim()) : null;
+  const isIdentLookup =
+    resolvedLookup !== null &&
+    d.prepare("SELECT 1 FROM film_rolls WHERE identifier = ? LIMIT 1").get(resolvedLookup) !==
+      undefined;
 
   // For SFR lookups we always do an exact identifier match regardless of FTS5
-  if (isSfrLookup) {
-    const resolved = resolveIdentifier(q.trim())!;
+  if (isIdentLookup) {
+    const resolved = resolvedLookup!;
     const filterConditions: string[] = ["identifier = ?"];
     const filterParams: (string | number)[] = [resolved];
 
@@ -215,7 +228,8 @@ router.get("/", (req, res) => {
               fr.mission, fr.has_shotlist_pdf, fr.has_transfer_on_disk,
               ${bestQualitySubquery("video_codec")} AS best_quality_codec,
               ${bestQualitySubquery("video_width")} AS best_quality_width,
-              ${bestQualitySubquery("video_height")} AS best_quality_height
+              ${bestQualitySubquery("video_height")} AS best_quality_height,
+              ${hasTransferAudioSubquery}
        FROM film_rolls fr ${where}
        ORDER BY fr.identifier LIMIT ? OFFSET ?`
       )
@@ -281,6 +295,7 @@ router.get("/", (req, res) => {
                 ${bestQualitySubquery("video_codec")} AS best_quality_codec,
                 ${bestQualitySubquery("video_width")} AS best_quality_width,
                 ${bestQualitySubquery("video_height")} AS best_quality_height,
+                ${hasTransferAudioSubquery},
                 bm25(film_rolls_fts, 5.0, 10.0, 5.0, 3.0, 2.0, 1.0) AS search_rank,
                 snippet(film_rolls_fts, 5, '<mark>', '</mark>', '…', 12) AS shotlist_snippet
          FROM film_rolls_fts fts
@@ -366,7 +381,8 @@ router.get("/", (req, res) => {
               fr.mission, fr.has_shotlist_pdf, fr.has_transfer_on_disk,
               ${bestQualitySubquery("video_codec")} AS best_quality_codec,
               ${bestQualitySubquery("video_width")} AS best_quality_width,
-              ${bestQualitySubquery("video_height")} AS best_quality_height
+              ${bestQualitySubquery("video_height")} AS best_quality_height,
+              ${hasTransferAudioSubquery}
        FROM film_rolls fr ${where}
        ORDER BY fr.identifier
        LIMIT ? OFFSET ?`

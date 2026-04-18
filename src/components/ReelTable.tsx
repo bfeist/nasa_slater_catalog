@@ -1,6 +1,6 @@
 import type { JSX } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHardDrive, faFilePdf } from "@fortawesome/free-solid-svg-icons";
+import { faHardDrive, faFilePdf, faVolumeHigh } from "@fortawesome/free-solid-svg-icons";
 import clsx from "clsx";
 import type { FilmReel } from "../types";
 import { computeQualityLabel, getBucketKey } from "../utils/qualityBuckets";
@@ -39,13 +39,20 @@ export default function ReelTable({ rows, onSelectReel, revealed }: ReelTablePro
     <table className={styles.table}>
       <thead>
         <tr>
-          {revealed && <th>Identifier</th>}
-          <th>Catalog ID</th>
+          {revealed && (
+            <th title="Original archival identifier for this film reel (e.g. FR-A013)">
+              Identifier
+            </th>
+          )}
+          <th title="Slater Film Catalog ID — a unique catalog number assigned to each reel">
+            Catalog ID
+          </th>
           <th>Title</th>
-          <th>Date</th>
-          <th>Quality</th>
-          <th>Disk</th>
-          <th>PDF</th>
+          <th title="Date the film was filed or cataloged">Date</th>
+          <th title="Best available digital transfer quality (codec and resolution)">Quality</th>
+          <th title="A digital transfer file exists on disk and can be streamed">Disk</th>
+          <th title="A scanned shotlist PDF is available for this reel">PDF</th>
+          <th title="Whether the reel has an audio track (mono, stereo, or silent)">Audio</th>
         </tr>
       </thead>
       <tbody>
@@ -102,11 +109,19 @@ export default function ReelTable({ rows, onSelectReel, revealed }: ReelTablePro
             <td className={styles.iconCell}>
               {r.has_shotlist_pdf ? <FontAwesomeIcon icon={faFilePdf} /> : ""}
             </td>
+            <td className={styles.iconCell}>
+              {r.audio || r.has_transfer_audio ? (
+                <FontAwesomeIcon
+                  icon={faVolumeHigh}
+                  title={r.audio ? `Audio: ${r.audio}` : "Has audio track"}
+                />
+              ) : null}
+            </td>
           </tr>
         ))}
         {rows.length === 0 && (
           <tr>
-            <td colSpan={revealed ? 7 : 6} className={styles.empty}>
+            <td colSpan={revealed ? 8 : 7} className={styles.empty}>
               No results
             </td>
           </tr>
