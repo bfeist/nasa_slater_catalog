@@ -1,10 +1,75 @@
-import type { JSX } from "react";
+import { useState, useRef, type JSX } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHardDrive, faFilePdf, faVolumeHigh } from "@fortawesome/free-solid-svg-icons";
+import {
+  faHardDrive,
+  faFilePdf,
+  faVolumeHigh,
+  faCopy,
+  faCheck,
+} from "@fortawesome/free-solid-svg-icons";
 import clsx from "clsx";
 import type { FilmReel } from "../types";
 import { computeQualityLabel, getBucketKey } from "../utils/qualityBuckets";
 import styles from "./ReelTable.module.css";
+
+function CopyCell({
+  text,
+  children,
+  cellId,
+  activeId,
+  setActiveId,
+}: {
+  text: string;
+  children: React.ReactNode;
+  cellId: string;
+  activeId: string | null;
+  setActiveId: (id: string | null) => void;
+}): JSX.Element {
+  const [copied, setCopied] = useState(false);
+  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showTooltip = () => {
+    if (hideTimer.current) clearTimeout(hideTimer.current);
+    setActiveId(cellId);
+  };
+
+  const scheduleHide = () => {
+    hideTimer.current = setTimeout(() => {
+      setActiveId(null);
+    }, 800);
+  };
+
+  const visible = activeId === cellId;
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(text).then(
+      () => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+      },
+      () => {}
+    );
+  };
+
+  return (
+    <span className={styles.copyCell} onMouseEnter={showTooltip} onMouseLeave={scheduleHide}>
+      {children}
+      {visible && (
+        <span className={styles.copyTooltip} onMouseEnter={showTooltip} onMouseLeave={scheduleHide}>
+          <button
+            className={clsx(styles.copyBtn, copied && styles.copyBtnDone)}
+            onClick={handleCopy}
+            type="button"
+            title={copied ? "Copied!" : `Copy "${text}"`}
+          >
+            <FontAwesomeIcon icon={copied ? faCheck : faCopy} />
+          </button>
+        </span>
+      )}
+    </span>
+  );
+}
 
 export type SortColumn =
   | "identifier"
@@ -70,6 +135,7 @@ export default function ReelTable({
   sortDirection,
   onSort,
 }: ReelTableProps): JSX.Element {
+  const [activeTooltipId, setActiveTooltipId] = useState<string | null>(null);
   return (
     <table className={styles.table}>
       <thead>
@@ -140,7 +206,7 @@ export default function ReelTable({
             />
           </th>
           <th
-            title="Whether the reel has an audio track (mono, stereo, or silent)"
+            title="A digital transfer file on disk has a confirmed audio track"
             onClick={() => onSort?.("audio")}
             className={clsx(sortColumn === "audio" && styles.thActive)}
           >
@@ -158,12 +224,28 @@ export default function ReelTable({
           >
             {revealed && (
               <td className="mono-cell">
-                <button className={styles.identifierBtn} type="button">
-                  {r.identifier}
-                </button>
+                <CopyCell
+                  text={r.identifier}
+                  cellId={`${r.identifier}-id`}
+                  activeId={activeTooltipId}
+                  setActiveId={setActiveTooltipId}
+                >
+                  <button className={styles.identifierBtn} type="button">
+                    {r.identifier}
+                  </button>
+                </CopyCell>
               </td>
             )}
-            <td className="mono-cell">{r.slater_number}</td>
+            <td className="mono-cell">
+              <CopyCell
+                text={r.slater_number ?? ""}
+                cellId={`${r.identifier}-slater`}
+                activeId={activeTooltipId}
+                setActiveId={setActiveTooltipId}
+              >
+                {r.slater_number}
+              </CopyCell>
+            </td>
             <td className={styles.titleCell}>
               {revealed ? (
                 <span className={styles.titleRevealed}>
@@ -204,7 +286,7 @@ export default function ReelTable({
               {r.has_shotlist_pdf ? <FontAwesomeIcon icon={faFilePdf} /> : ""}
             </td>
             <td className={styles.iconCell}>
-              {r.audio || r.has_transfer_audio ? (
+              {r.has_transfer_audio ? (
                 <FontAwesomeIcon
                   icon={faVolumeHigh}
                   title={r.audio ? `Audio: ${r.audio}` : "Has audio track"}
