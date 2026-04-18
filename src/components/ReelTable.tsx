@@ -6,6 +6,17 @@ import type { FilmReel } from "../types";
 import { computeQualityLabel, getBucketKey } from "../utils/qualityBuckets";
 import styles from "./ReelTable.module.css";
 
+export type SortColumn =
+  | "identifier"
+  | "slater_number"
+  | "title"
+  | "date"
+  | "quality"
+  | "has_transfer_on_disk"
+  | "has_shotlist_pdf"
+  | "audio";
+export type SortDirection = "asc" | "desc";
+
 function QualityBadge({
   codec,
   width,
@@ -32,27 +43,110 @@ interface ReelTableProps {
   rows: FilmReel[];
   onSelectReel: (identifier: string) => void;
   revealed: boolean;
+  sortColumn?: SortColumn | null;
+  sortDirection?: SortDirection;
+  onSort?: (column: SortColumn) => void;
 }
 
-export default function ReelTable({ rows, onSelectReel, revealed }: ReelTableProps): JSX.Element {
+function SortIndicator({
+  column,
+  active,
+  direction,
+}: {
+  column: SortColumn;
+  active: SortColumn | null | undefined;
+  direction: SortDirection | undefined;
+}): JSX.Element | null {
+  if (active !== column) return <span className={styles.sortIndicator} />;
+  // prettier-ignore
+  return <span className={styles.sortIndicatorActive}>{direction === "asc" ? "▲" : "▼"}</span>;
+}
+
+export default function ReelTable({
+  rows,
+  onSelectReel,
+  revealed,
+  sortColumn,
+  sortDirection,
+  onSort,
+}: ReelTableProps): JSX.Element {
   return (
     <table className={styles.table}>
       <thead>
         <tr>
           {revealed && (
-            <th title="Original archival identifier for this film reel (e.g. FR-A013)">
+            <th
+              title="Original archival identifier for this film reel (e.g. FR-A013)"
+              onClick={() => onSort?.("identifier")}
+              className={clsx(sortColumn === "identifier" && styles.thActive)}
+            >
               Identifier
+              <SortIndicator column="identifier" active={sortColumn} direction={sortDirection} />
             </th>
           )}
-          <th title="Slater Film Catalog ID — a unique catalog number assigned to each reel">
+          <th
+            title="Slater Film Catalog ID — a unique catalog number assigned to each reel"
+            onClick={() => onSort?.("slater_number")}
+            className={clsx(sortColumn === "slater_number" && styles.thActive)}
+          >
             Catalog ID
+            <SortIndicator column="slater_number" active={sortColumn} direction={sortDirection} />
           </th>
-          <th>Title</th>
-          <th title="Date the film was filed or cataloged">Date</th>
-          <th title="Best available digital transfer quality (codec and resolution)">Quality</th>
-          <th title="A digital transfer file exists on disk and can be streamed">Disk</th>
-          <th title="A scanned shotlist PDF is available for this reel">PDF</th>
-          <th title="Whether the reel has an audio track (mono, stereo, or silent)">Audio</th>
+          <th
+            onClick={() => onSort?.("title")}
+            className={clsx(sortColumn === "title" && styles.thActive)}
+          >
+            Title
+            <SortIndicator column="title" active={sortColumn} direction={sortDirection} />
+          </th>
+          <th
+            title="Date the film was filed or cataloged"
+            onClick={() => onSort?.("date")}
+            className={clsx(sortColumn === "date" && styles.thActive)}
+          >
+            Date
+            <SortIndicator column="date" active={sortColumn} direction={sortDirection} />
+          </th>
+          <th
+            title="Best available digital transfer quality (codec and resolution)"
+            onClick={() => onSort?.("quality")}
+            className={clsx(sortColumn === "quality" && styles.thActive)}
+          >
+            Quality
+            <SortIndicator column="quality" active={sortColumn} direction={sortDirection} />
+          </th>
+          <th
+            title="A digital transfer file exists on disk and can be streamed"
+            onClick={() => onSort?.("has_transfer_on_disk")}
+            className={clsx(sortColumn === "has_transfer_on_disk" && styles.thActive)}
+          >
+            Disk
+            <SortIndicator
+              column="has_transfer_on_disk"
+              active={sortColumn}
+              direction={sortDirection}
+            />
+          </th>
+          <th
+            title="A scanned shotlist PDF is available for this reel"
+            onClick={() => onSort?.("has_shotlist_pdf")}
+            className={clsx(sortColumn === "has_shotlist_pdf" && styles.thActive)}
+          >
+            PDF
+            <SortIndicator
+              column="has_shotlist_pdf"
+              active={sortColumn}
+              direction={sortDirection}
+            />
+          </th>
+          <th
+            title="Whether the reel has an audio track (mono, stereo, or silent)"
+            onClick={() => onSort?.("audio")}
+            className={clsx(sortColumn === "audio" && styles.thActive)}
+          >
+            Audio
+            <SortIndicator column="audio" active={sortColumn} direction={sortDirection} />
+          </th>
         </tr>
       </thead>
       <tbody>

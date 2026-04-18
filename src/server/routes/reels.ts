@@ -118,7 +118,30 @@ function buildFts5Query(rawQuery: string): string | null {
   return parts.join(" AND ");
 }
 
-// ---- GET /api/reels?q=&page=&limit=&has_transfer= ----
+// ---------------------------------------------------------------------------
+// Sort column whitelist (maps query param → SQL expression)
+// ---------------------------------------------------------------------------
+const ALLOWED_SORT_COLUMNS: Record<string, string> = {
+  identifier: "fr.identifier",
+  title: "fr.title",
+  date: "fr.date",
+  quality: "COALESCE(best_quality_width, 0)",
+  has_transfer_on_disk: "fr.has_transfer_on_disk",
+  has_shotlist_pdf: "fr.has_shotlist_pdf",
+  audio: "fr.audio",
+};
+
+/** Sort identifiers by their slater number. Returns an ordered array of identifier strings. */
+function sortIdsBySlater(rows: { identifier: string }[], order: "ASC" | "DESC"): string[] {
+  return rows
+    .map((r) => ({ identifier: r.identifier, slater: toSlater(r.identifier) }))
+    .sort((a, b) =>
+      order === "ASC" ? a.slater.localeCompare(b.slater) : b.slater.localeCompare(a.slater)
+    )
+    .map((r) => r.identifier);
+}
+
+// ---- GET /api/reels?q=&page=&limit=&has_transfer=&sort=&order= ----
 router.get("/", (req, res) => {
   const d = getDb();
   const q = (req.query.q as string) ?? "";
@@ -128,6 +151,13 @@ router.get("/", (req, res) => {
   const hasTransfer = req.query.has_transfer as string | undefined;
   const qualityBucket = req.query.quality_bucket as string | undefined;
   const reveal = isRevealed(req);
+
+  // Parse and validate sort parameters
+  const sortCol = (req.query.sort as string) ?? "";
+  const sortOrder = (req.query.order as string)?.toLowerCase() === "desc" ? "DESC" : "ASC";
+  const sortExpr = ALLOWED_SORT_COLUMNS[sortCol] ?? null;
+  const customSort = sortExpr ? `${sortExpr} ${sortOrder}` : null;
+  const isSlatSort = sortCol === "slater_number";
 
   if (q) {
     logActivity({
@@ -231,7 +261,8 @@ router.get("/", (req, res) => {
               ${bestQualitySubquery("video_height")} AS best_quality_height,
               ${hasTransferAudioSubquery}
        FROM film_rolls fr ${where}
-       ORDER BY fr.identifier LIMIT ? OFFSET ?`
+       ORDER BY ${customSort ?? "fr.identifier ASC"}
+       LIMIT ? OFFSET ?`
       )
       .all(...filterParams, limit, offset);
 
@@ -276,6 +307,56 @@ router.get("/", (req, res) => {
 
       const extraWhere = filterConditions.length ? "AND " + filterConditions.join(" AND ") : "";
 
+      if (isSlatSort) {
+        const allFtsIds = d
+          .prepare(
+            `SELECT fr.identifier
+             FROM film_rolls_fts fts
+             JOIN film_rolls fr ON fr.rowid = fts.rowid
+             WHERE film_rolls_fts MATCH ? ${extraWhere}`
+          )
+          .all(ftsQuery, ...filterParams) as { identifier: string }[];
+        const sortedIds = sortIdsBySlater(allFtsIds, sortOrder);
+        const pageIds = sortedIds.slice(offset, offset + limit);
+        const ph = pageIds.map(() => "?").join(", ");
+        const pageRows =
+          pageIds.length === 0
+            ? []
+            : (d
+                .prepare(
+                  `SELECT fr.identifier, fr.id_prefix, fr.title, fr.alternate_title, fr.date,
+                          fr.feet, fr.minutes, fr.audio, fr.mission,
+                          fr.has_shotlist_pdf, fr.has_transfer_on_disk,
+                          ${bestQualitySubquery("video_codec")} AS best_quality_codec,
+                          ${bestQualitySubquery("video_width")} AS best_quality_width,
+                          ${bestQualitySubquery("video_height")} AS best_quality_height,
+                          ${hasTransferAudioSubquery}
+                   FROM film_rolls fr WHERE fr.identifier IN (${ph})`
+                )
+                .all(...pageIds) as { identifier: string }[]);
+        const idxMap = new Map(pageIds.map((id, i) => [id, i]));
+        pageRows.sort((a, b) => (idxMap.get(a.identifier) ?? 0) - (idxMap.get(b.identifier) ?? 0));
+        const mapped = pageRows.map((r) => {
+          const slater_number = toSlater(r.identifier);
+          const guestDisk =
+            guestTransferReels !== null
+              ? { has_transfer_on_disk: guestTransferReels.has(r.identifier) ? 1 : 0 }
+              : {};
+          return reveal
+            ? { ...r, slater_number }
+            : { ...r, identifier: slater_number, slater_number, ...guestDisk };
+        });
+        res.json({
+          total: sortedIds.length,
+          page,
+          limit,
+          rows: mapped,
+          revealed: reveal,
+          search: "fts5",
+        });
+        return;
+      }
+
       // Count matching rows
       const countRow = d
         .prepare(
@@ -301,7 +382,7 @@ router.get("/", (req, res) => {
          FROM film_rolls_fts fts
          JOIN film_rolls fr ON fr.rowid = fts.rowid
          WHERE film_rolls_fts MATCH ? ${extraWhere}
-         ORDER BY search_rank
+         ORDER BY ${customSort ?? "search_rank"}
          LIMIT ? OFFSET ?`
         )
         .all(ftsQuery, ...filterParams, limit, offset);
@@ -370,6 +451,51 @@ router.get("/", (req, res) => {
 
   const where = conditions.length ? "WHERE " + conditions.join(" AND ") : "";
 
+  if (isSlatSort) {
+    const allIdRows = d
+      .prepare(`SELECT fr.identifier FROM film_rolls fr ${where}`)
+      .all(...params) as { identifier: string }[];
+    const sortedIds = sortIdsBySlater(allIdRows, sortOrder);
+    const pageIds = sortedIds.slice(offset, offset + limit);
+    const ph = pageIds.map(() => "?").join(", ");
+    const pageRows =
+      pageIds.length === 0
+        ? []
+        : (d
+            .prepare(
+              `SELECT fr.identifier, fr.id_prefix, fr.title, fr.alternate_title, fr.date,
+                      fr.feet, fr.minutes, fr.audio, fr.mission,
+                      fr.has_shotlist_pdf, fr.has_transfer_on_disk,
+                      ${bestQualitySubquery("video_codec")} AS best_quality_codec,
+                      ${bestQualitySubquery("video_width")} AS best_quality_width,
+                      ${bestQualitySubquery("video_height")} AS best_quality_height,
+                      ${hasTransferAudioSubquery}
+               FROM film_rolls fr WHERE fr.identifier IN (${ph})`
+            )
+            .all(...pageIds) as { identifier: string }[]);
+    const idxMap = new Map(pageIds.map((id, i) => [id, i]));
+    pageRows.sort((a, b) => (idxMap.get(a.identifier) ?? 0) - (idxMap.get(b.identifier) ?? 0));
+    const mapped = pageRows.map((r) => {
+      const slater_number = toSlater(r.identifier);
+      const guestDisk =
+        guestTransferReels !== null
+          ? { has_transfer_on_disk: guestTransferReels.has(r.identifier) ? 1 : 0 }
+          : {};
+      return reveal
+        ? { ...r, slater_number }
+        : { ...r, identifier: slater_number, slater_number, ...guestDisk };
+    });
+    res.json({
+      total: sortedIds.length,
+      page,
+      limit,
+      rows: mapped,
+      revealed: reveal,
+      search: q ? "like" : "none",
+    });
+    return;
+  }
+
   const countRow = d.prepare(`SELECT COUNT(*) as c FROM film_rolls fr ${where}`).get(...params) as {
     c: number;
   };
@@ -384,7 +510,7 @@ router.get("/", (req, res) => {
               ${bestQualitySubquery("video_height")} AS best_quality_height,
               ${hasTransferAudioSubquery}
        FROM film_rolls fr ${where}
-       ORDER BY fr.identifier
+       ORDER BY ${customSort ?? "fr.identifier ASC"}
        LIMIT ? OFFSET ?`
     )
     .all(...params, limit, offset);

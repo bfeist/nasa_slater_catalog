@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import clsx from "clsx";
 import SearchBar from "../components/SearchBar";
 import ReelTable from "../components/ReelTable";
+import type { SortColumn, SortDirection } from "../components/ReelTable";
 import ReelDetailModal from "../components/ReelDetailModal";
 import { searchReels } from "../api/client";
 import { QUALITY_BUCKETS } from "../utils/qualityBuckets";
@@ -95,6 +96,8 @@ export default function SearchPage(): JSX.Element {
   const [selectedReel, setSelectedReel] = useState<string | null>(null);
   const [revealed, setRevealed] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortColumn, setSortColumn] = useState<SortColumn | null>("identifier");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
   const toolbarRef = useRef<HTMLDivElement>(null);
   const tableContainerRef = useRef<HTMLDivElement>(null);
@@ -128,6 +131,8 @@ export default function SearchPage(): JSX.Element {
           limit: PAGE_SIZE,
           has_transfer: effectiveHasTransfer || undefined,
           quality_bucket: qualityBucket || undefined,
+          sort: sortColumn || undefined,
+          order: sortColumn ? sortDirection : undefined,
         });
         if (!cancelled) {
           setRows(result.rows);
@@ -145,7 +150,7 @@ export default function SearchPage(): JSX.Element {
     return () => {
       cancelled = true;
     };
-  }, [q, effectiveHasTransfer, qualityBucket, currentPage, authVersion]);
+  }, [q, effectiveHasTransfer, qualityBucket, currentPage, authVersion, sortColumn, sortDirection]);
 
   function handleSearch(newQ: string, newHasTransfer: boolean) {
     const params: Record<string, string> = {};
@@ -163,6 +168,16 @@ export default function SearchPage(): JSX.Element {
     if (bucket) params.quality_bucket = bucket;
     setCurrentPage(1);
     setSearchParams(params);
+  }
+
+  function handleSort(column: SortColumn) {
+    if (sortColumn === column) {
+      setSortDirection((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+    setCurrentPage(1);
   }
 
   const start = total === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
@@ -220,7 +235,14 @@ export default function SearchPage(): JSX.Element {
       {error && <div className={styles.errorMsg}>Error: {error}</div>}
 
       <div className={styles.reelTableContainer} ref={tableContainerRef}>
-        <ReelTable rows={rows} onSelectReel={setSelectedReel} revealed={revealed} />
+        <ReelTable
+          rows={rows}
+          onSelectReel={setSelectedReel}
+          revealed={revealed}
+          sortColumn={sortColumn}
+          sortDirection={sortDirection}
+          onSort={handleSort}
+        />
       </div>
 
       <PaginationBar

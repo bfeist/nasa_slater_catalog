@@ -42,6 +42,8 @@ export interface ReelSearchParams {
   limit?: number;
   has_transfer?: boolean;
   quality_bucket?: string;
+  sort?: string;
+  order?: "asc" | "desc";
 }
 
 export function searchReels(params: ReelSearchParams): Promise<ReelSearchResponse> {
@@ -51,6 +53,8 @@ export function searchReels(params: ReelSearchParams): Promise<ReelSearchRespons
   if (params.limit) sp.set("limit", String(params.limit));
   if (params.has_transfer) sp.set("has_transfer", "1");
   if (params.quality_bucket) sp.set("quality_bucket", params.quality_bucket);
+  if (params.sort) sp.set("sort", params.sort);
+  if (params.order) sp.set("order", params.order);
   return get<ReelSearchResponse>(`/reels?${sp.toString()}`);
 }
 

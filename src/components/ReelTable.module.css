@@ -24,6 +24,35 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
   cursor: pointer;
+  user-select: none;
+  transition: color var(--transition-fast);
+}
+
+.table th:hover {
+  color: var(--color-text-primary);
+}
+
+.thActive {
+  color: var(--color-text-primary);
+}
+
+.sortIndicator {
+  display: inline-block;
+  width: 1em;
+  text-align: center;
+  font-size: 0.7em;
+  vertical-align: middle;
+  opacity: 0;
+}
+
+.sortIndicatorActive {
+  display: inline-block;
+  width: 1em;
+  text-align: center;
+  font-size: 0.7em;
+  vertical-align: middle;
+  margin-left: 0.2em;
+  color: var(--color-link);
 }
 
 .clickableRow {
