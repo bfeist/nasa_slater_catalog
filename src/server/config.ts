@@ -18,6 +18,30 @@
 //   VIDEO_ARCHIVE_ROOT    – Base path for the NASA archive video share
 //   WATERMARK_FONT_PATH   – Path to a TrueType font for ffmpeg watermark
 //   VITE_DIST_DIR         – Path to the built Vite SPA (prod: served by Express)
+//
+// Home-gateway split (production deployment only):
+//
+//   HOME_GATEWAY_ROLE         – "home" → run this process as the home gateway
+//                                (only video/PDF byte routes; no catalog API)
+//                                unset → catalog API process
+//   HOME_GATEWAY_BASE_URL     – Public URL of the home gateway, e.g.
+//                                https://home.example.com. When set on the
+//                                catalog API, it switches into "split" mode
+//                                and proxies session creation to the gateway.
+//                                When unset locally, the catalog API stays in
+//                                "monolithic" mode and serves video/PDFs
+//                                directly (today's `npm run dev` behavior).
+//   HOME_GATEWAY_SHARED_SECRET – Bearer token shared between catalog API and
+//                                home gateway. Required when role=home or
+//                                BASE_URL is set.
+//   HOME_GATEWAY_HEALTH_TTL_SECS – Cache TTL for the gateway /healthz probe
+//                                  (default 30s).
+//   PUBLIC_ORIGIN             – CORS allow-origin for the home gateway, e.g.
+//                                https://slaterfilmcatalog.benfeist.com.
+//   SESSION_TTL_SECS          – Playback-start token lifetime (default 300).
+//   PDF_TOKEN_TTL_SECS        – PDF token lifetime (default 300).
+//   RELEASE_VERSION           – Git SHA / release tag, validated across the
+//                                catalog ↔ home boundary to prevent split-brain.
 // ---------------------------------------------------------------------------
 
 import dotenv from "dotenv";
@@ -81,6 +105,17 @@ function defaultArchiveRoot(): string {
 
 const env = process.env.NODE_ENV ?? "development";
 
+// ---------------------------------------------------------------------------
+// Home gateway split mode detection
+//   monolithic — everything in one Express process (default; today's dev)
+//   catalog    — catalog API; calls home gateway for video/PDF bytes
+//   home       — home gateway; only serves video/PDF bytes via tokens
+// ---------------------------------------------------------------------------
+const gatewayRole = (process.env.HOME_GATEWAY_ROLE ?? "").toLowerCase();
+const gatewayBaseUrl = (process.env.HOME_GATEWAY_BASE_URL ?? "").replace(/\/+$/, "");
+const gatewayMode: "monolithic" | "catalog" | "home" =
+  gatewayRole === "home" ? "home" : gatewayBaseUrl ? "catalog" : "monolithic";
+
 export const config = {
   env,
   isDev: env === "development",
@@ -140,6 +175,24 @@ export const config = {
 
   /** HMAC key used to derive Slater numbers from identifiers */
   slaterSecret: process.env.SLATER_SECRET ?? "slater-film-default-hmac-key",
+
+  // ---- Home gateway split ----------------------------------------------
+  /** Which role this process plays in the catalog/home split. */
+  gatewayMode,
+  /** Public URL of the home gateway (catalog mode only). */
+  gatewayBaseUrl,
+  /** Bearer secret shared between catalog API and home gateway. */
+  gatewaySharedSecret: process.env.HOME_GATEWAY_SHARED_SECRET ?? "",
+  /** Cache TTL for the home gateway /healthz probe (seconds). */
+  gatewayHealthTtlSecs: parseInt(process.env.HOME_GATEWAY_HEALTH_TTL_SECS ?? "30", 10),
+  /** CORS allow-origin enforced by the home gateway. */
+  publicOrigin: process.env.PUBLIC_ORIGIN ?? "",
+  /** Playback-start token lifetime (seconds). */
+  sessionTtlSecs: parseInt(process.env.SESSION_TTL_SECS ?? "300", 10),
+  /** PDF-access token lifetime (seconds). */
+  pdfTokenTtlSecs: parseInt(process.env.PDF_TOKEN_TTL_SECS ?? "300", 10),
+  /** Build/release version tag. Validated across the catalog ↔ home boundary. */
+  releaseVersion: process.env.RELEASE_VERSION ?? "dev",
 } as const;
 
 export type Config = typeof config;

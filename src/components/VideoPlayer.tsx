@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type JSX } from "react";
-import { videoStreamUrl, videoHeartbeat, videoStop } from "../api/client";
+import { requestVideoSession, videoHeartbeat, videoStop } from "../api/client";
 import { formatDuration } from "../utils/format";
 import styles from "./VideoPlayer.module.css";
 
@@ -44,8 +44,34 @@ export default function VideoPlayer({
   const duration = durationSecs ?? 0;
   const currentTime = streamKey.offset + videoTime;
 
-  // Build the stream URL with the current seek offset and stream id
-  const streamUrl = videoStreamUrl(fileId, streamKey.id, streamKey.offset);
+  // Resolved stream URL for the current streamKey; null while the session is
+  // being requested or if it failed (split mode + home gateway down).
+  const [streamUrl, setStreamUrl] = useState<string | null>(null);
+  const [streamError, setStreamError] = useState<string | null>(null);
+
+  // Fetch a session URL whenever the streamKey changes (initial mount or seek).
+  useEffect(() => {
+    let cancelled = false;
+    setStreamUrl(null);
+    setStreamError(null);
+    requestVideoSession(fileId, streamKey.offset, streamKey.id)
+      .then((session) => {
+        if (cancelled) return;
+        setStreamUrl(session.streamUrl);
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        const msg = err instanceof Error ? err.message : String(err);
+        setStreamError(
+          msg.includes("503")
+            ? "Video streaming is temporarily unavailable. The home gateway is offline."
+            : "Could not start playback."
+        );
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [fileId, streamKey]);
 
   // Update videoTime from the <video> element's timeupdate event
   useEffect(() => {
@@ -70,34 +96,28 @@ export default function VideoPlayer({
   }, [streamKey]);
 
   // Heartbeat — keeps the server-side watchdog alive while the player is open.
-  // Sends an immediate ping, then one every 5 s.
-  // Cleanup fires on seek (new streamKey) and on unmount, sending an explicit
-  // stop so the server kills ffmpeg right away instead of waiting for timeout.
-  //
-  // The stop is deferred by one tick so that React Strict Mode's immediate
-  // cleanup→remount cycle (which reuses the same streamId) can cancel it.
-  // On a real seek the new streamKey has a different id, so the old stop is
-  // NOT cancelled and still fires correctly.
+  // In split mode this hits the home gateway directly; in monolithic mode it
+  // hits same-origin Express. Both are derived from streamUrl.
   useEffect(() => {
     const { id } = streamKey;
+    if (!streamUrl) return; // wait until session resolves
 
-    // Cancel a pending stop for this same stream id (Strict Mode / HMR remount).
     if (pendingStopRef.current?.id === id) {
       clearTimeout(pendingStopRef.current.timer);
       pendingStopRef.current = null;
     }
 
-    videoHeartbeat(id).catch(() => {});
-    const interval = setInterval(() => videoHeartbeat(id).catch(() => {}), 5_000);
+    videoHeartbeat(streamUrl, id).catch(() => {});
+    const interval = setInterval(() => videoHeartbeat(streamUrl, id).catch(() => {}), 5_000);
     return () => {
       clearInterval(interval);
       const timer = setTimeout(() => {
         if (pendingStopRef.current?.id === id) pendingStopRef.current = null;
-        videoStop(id).catch(() => {});
+        videoStop(streamUrl, id).catch(() => {});
       }, 0);
       pendingStopRef.current = { id, timer };
     };
-  }, [streamKey]);
+  }, [streamKey, streamUrl]);
 
   // --- Scrubber interaction ---
   const getScrubTime = useCallback(
@@ -210,15 +230,22 @@ export default function VideoPlayer({
         </div>
 
         <div className={styles.videoWrapper}>
-          <video
-            ref={videoRef}
-            autoPlay
-            className={styles.videoElement}
-            src={streamUrl}
-            onClick={togglePlay}
-          >
-            <track kind="captions" />
-          </video>
+          {streamError && (
+            <div className="muted" style={{ padding: "2rem", textAlign: "center" }}>
+              {streamError}
+            </div>
+          )}
+          {!streamError && streamUrl && (
+            <video
+              ref={videoRef}
+              autoPlay
+              className={styles.videoElement}
+              src={streamUrl}
+              onClick={togglePlay}
+            >
+              <track kind="captions" />
+            </video>
+          )}
         </div>
 
         {/* Custom controls bar */}
