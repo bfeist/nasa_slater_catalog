@@ -1,10 +1,10 @@
-import { useState, useEffect, useMemo, useRef, type JSX } from "react";
+import { useState, useEffect, useRef, type JSX } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
-import { shotlistPdfUrl } from "../api/client";
+import { requestPdfSession } from "../api/client";
 import clsx from "clsx";
 import styles from "./ShotlistPdfViewer.module.css";
 
@@ -58,17 +58,49 @@ export default function ShotlistPdfViewer({
   const tabLabel = (filename: string, index: number): string =>
     isAuthed ? filename.replace(".pdf", "") : `Document ${index + 1}`;
 
-  const pdfFile = useMemo(
-    () =>
-      activePdf
-        ? {
-            url: shotlistPdfUrl(activePdf),
-            httpHeaders: isAuthed ? { Authorization: `Bearer ${authToken}` } : {},
-          }
-        : null,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [activePdf, isAuthed]
-  );
+  // Resolve a session URL each time the active PDF changes. In monolithic
+  // mode this is a same-origin /api/shotlist-pdf/... URL; in split mode it
+  // is an absolute home-gateway URL.
+  const [pdfFile, setPdfFile] = useState<{
+    url: string;
+    httpHeaders: Record<string, string>;
+  } | null>(null);
+  const [pdfError, setPdfError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!activePdf) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setPdfFile(null);
+      return;
+    }
+    let cancelled = false;
+    setPdfFile(null);
+    setPdfError(null);
+    requestPdfSession(activePdf)
+      .then((session) => {
+        if (cancelled) return;
+        setPdfFile({
+          url: session.pdfUrl,
+          // Auth header only useful for same-origin (gateway URLs are token-bearing).
+          httpHeaders:
+            session.mode === "monolithic" && isAuthed
+              ? { Authorization: `Bearer ${authToken}` }
+              : {},
+        });
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        const msg = err instanceof Error ? err.message : String(err);
+        setPdfError(
+          msg.includes("503")
+            ? "PDFs are temporarily unavailable. The home gateway is offline."
+            : "Could not load PDF."
+        );
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [activePdf, isAuthed, authToken]);
 
   return (
     <Dialog.Root open onOpenChange={(open) => !open && onClose()}>
@@ -109,7 +141,17 @@ export default function ShotlistPdfViewer({
                 No shotlist PDFs found for {identifier}.
               </div>
             )}
-            {pdfFile && (
+            {pdfError && (
+              <div className="muted" style={{ padding: "2rem", textAlign: "center" }}>
+                {pdfError}
+              </div>
+            )}
+            {!pdfError && pdfFile && (
+              <div className="muted" style={{ padding: "2rem", textAlign: "center" }}>
+                {pdfError}
+              </div>
+            )}
+            {!pdfError && pdfFile && (
               <Document
                 file={pdfFile}
                 className={styles.document}

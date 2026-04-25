@@ -70,37 +70,139 @@ export function fetchShotlistText(identifier: string): Promise<ShotlistTextRespo
   return get<ShotlistTextResponse>(`/reels/${encodeURIComponent(identifier)}/shotlist-text`);
 }
 
-/** Get the URL for serving a shotlist PDF */
+/** Get the URL for serving a shotlist PDF (legacy: same-origin only). */
 export function shotlistPdfUrl(filename: string): string {
   return `${BASE}/shotlist-pdf/${encodeURIComponent(filename)}`;
 }
 
-/** Get the streaming URL for a given file ID with an explicit streamId for heartbeat tracking */
-export function videoStreamUrl(fileId: number, streamId: string, startSecs?: number): string {
-  const base = `${BASE}/video/${fileId}/stream`;
-  const params = new URLSearchParams({ streamId });
-  if (startSecs && startSecs > 0) params.set("start", startSecs.toFixed(1));
-  // <video src> cannot send custom headers, so embed the token as a query param
-  // for the server to fall back on when the Authorization header is absent.
-  try {
-    const token = globalThis.sessionStorage?.getItem("authToken");
-    if (token) params.set("token", token);
-  } catch {
-    /* SSR / non-browser */
+// ---------------------------------------------------------------------------
+// Session-based video and PDF access
+//
+// In monolithic mode the catalog API returns a same-origin URL (today's
+// behavior). In split mode it returns an absolute URL pointing at the home
+// gateway, plus an expiry timestamp the client uses to renew before seek.
+// Either way the SPA just renders the returned URL — no branching needed
+// in component code.
+// ---------------------------------------------------------------------------
+
+export interface VideoSession {
+  mode: "monolithic" | "split";
+  sessionId: string;
+  streamUrl: string;
+  /** Absolute UTC ms when the playback-start window expires; null in monolithic mode. */
+  expiresAtMs: number | null;
+}
+
+export interface PdfSession {
+  mode: "monolithic" | "split";
+  pdfUrl: string;
+  expiresAtMs: number | null;
+}
+
+async function postJson<T>(path: string, body: unknown): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, {
+    method: "POST",
+    headers: { ...authHeaders(), "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`API ${res.status}: ${text}`);
   }
-  return `${base}?${params.toString()}`;
+  return res.json() as Promise<T>;
+}
+
+/**
+ * Request a playback-start session. Append `streamId` (a fresh UUID per seek)
+ * to the returned `streamUrl` so the heartbeat / stop registry can find this
+ * playback on either monolithic Express or the home gateway.
+ */
+export async function requestVideoSession(
+  fileId: number,
+  startSecs: number,
+  streamId: string
+): Promise<VideoSession> {
+  const session = await postJson<VideoSession>("/video/sessions", { fileId, startSecs });
+  return appendStreamParams(session, streamId);
+}
+
+/** Renew a video session (used when the playback-start window is about to lapse mid-seek). */
+export async function renewVideoSession(
+  sessionId: string,
+  fileId: number,
+  startSecs: number,
+  streamId: string
+): Promise<VideoSession> {
+  const session = await postJson<VideoSession>(
+    `/video/sessions/${encodeURIComponent(sessionId)}/renew`,
+    { fileId, startSecs }
+  );
+  return appendStreamParams(session, streamId);
+}
+
+function appendStreamParams(session: VideoSession, streamId: string): VideoSession {
+  const url = new URL(session.streamUrl, globalThis.location?.origin ?? "http://localhost");
+  url.searchParams.set("streamId", streamId);
+  // Same-origin URLs need the auth token in the query (video tags can't set headers).
+  if (session.mode === "monolithic") {
+    try {
+      const token = globalThis.sessionStorage?.getItem("authToken");
+      if (token) url.searchParams.set("token", token);
+    } catch {
+      /* SSR */
+    }
+  }
+  // For monolithic same-origin URLs return relative form so dev proxy works.
+  return {
+    ...session,
+    streamUrl: session.mode === "monolithic" ? `${url.pathname}${url.search}` : url.toString(),
+  };
+}
+
+/** Request a PDF session. Returns a URL the PDF viewer can load directly. */
+export async function requestPdfSession(filename: string): Promise<PdfSession> {
+  return postJson<PdfSession>("/pdf/sessions", { filename });
+}
+
+/** Best-effort gateway availability check (used to disable buttons in split mode). */
+export async function fetchGatewayStatus(): Promise<{
+  mode: "monolithic" | "split";
+  available: boolean;
+}> {
+  return get<{ mode: "monolithic" | "split"; available: boolean }>("/gateway/status");
+}
+
+// ---------------------------------------------------------------------------
+// Heartbeat / stop targets
+//
+// Monolithic mode: hits same-origin /api/video/heartbeat.
+// Split mode: hits the home gateway directly (CORS allows it).
+// The component passes the gateway origin parsed from the streamUrl.
+// ---------------------------------------------------------------------------
+
+function originFromStreamUrl(streamUrl: string): string {
+  try {
+    const u = new URL(streamUrl, globalThis.location?.origin ?? "http://localhost");
+    // Same-origin streams keep using /api/...
+    if (!streamUrl.startsWith("http")) return BASE + "/video";
+    return `${u.origin}/stream`;
+  } catch {
+    return BASE + "/video";
+  }
 }
 
 /** Heartbeat — call every few seconds while a stream is active */
-export async function videoHeartbeat(streamId: string): Promise<void> {
-  await fetch(`${BASE}/video/heartbeat?streamId=${encodeURIComponent(streamId)}`, {
+export async function videoHeartbeat(streamUrl: string, streamId: string): Promise<void> {
+  const base = originFromStreamUrl(streamUrl);
+  await fetch(`${base}/heartbeat?streamId=${encodeURIComponent(streamId)}`, {
     headers: authHeaders(),
   });
 }
 
-/** Explicit stop — call when the player unmounts or seeks away from a stream */
-export async function videoStop(streamId: string): Promise<void> {
-  await fetch(`${BASE}/video/stop?streamId=${encodeURIComponent(streamId)}`, {
+/** Explicit stop — call when the player unmounts or seeks away */
+export async function videoStop(streamUrl: string, streamId: string): Promise<void> {
+  const base = originFromStreamUrl(streamUrl);
+  await fetch(`${base}/stop?streamId=${encodeURIComponent(streamId)}`, {
     method: "POST",
     headers: authHeaders(),
   });

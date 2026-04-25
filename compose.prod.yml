@@ -1,0 +1,52 @@
+# =============================================================================
+# Slater Film Catalog — Production stack
+#
+# Single service: catalog API. No web container (host Nginx serves the SPA).
+# No /archive mount, no shotlist_pdfs mount — those live on the home gateway
+# and are reached at runtime via HOME_GATEWAY_BASE_URL.
+#
+# Usage on the production host:
+#   docker compose -f compose.prod.yml --env-file .env.prod up -d
+# =============================================================================
+
+name: slater-film-catalog-prod
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: docker/api/Dockerfile
+    image: slater-catalog-api:latest
+    container_name: slater-catalog-api
+    restart: unless-stopped
+
+    # Bind to localhost only — the host Nginx fronts this and proxies /api/*
+    ports:
+      - "127.0.0.1:9311:9301"
+
+    env_file:
+      - .env.prod
+
+    volumes:
+      # SQLite snapshot — read-only, deployed by Workflow B
+      - ./database/catalog.db:/app/database/catalog.db:ro
+      # Auth credentials (writable so the admin API can manage users)
+      - ./auth.config.json:/app/auth.config.json
+      # Activity logs
+      - ./.local/dockerLogs:/app/logs
+
+    environment:
+      DB_PATH: /app/database/catalog.db
+      AUTH_CONFIG_PATH: /app/auth.config.json
+      SERVE_FRONTEND: "false"
+      LOG_DIR: /app/logs
+      LOG_LEVEL: info
+      # Catalog mode is implied by HOME_GATEWAY_BASE_URL being set in .env.prod.
+      # Do NOT set HOME_GATEWAY_ROLE=home here.
+
+    networks:
+      - slater-prod-net
+
+networks:
+  slater-prod-net:
+    driver: bridge

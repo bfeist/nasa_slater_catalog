@@ -1,0 +1,95 @@
+# =============================================================================
+# Slater Film Catalog — Home Video Gateway stack
+#
+# Single file for both local dev and production. The NASA archive is mounted
+# directly from the SMB share (\\NAS_HOST\NAS_SHARE) via the Docker CIFS
+# volume driver — no separate bind-mount override needed.
+#
+# Usage:
+#   docker compose -f compose.home.yml --env-file .env.home up -d --build
+#   (or: npm run gateway:up)
+#
+# Fronted by Nginx Proxy Manager (Let's Encrypt).
+# Allow:  /healthz  /stream/*  /pdf/*
+# Block:  /internal/*
+# =============================================================================
+
+name: slater-film-catalog-home
+
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: docker/home-gateway/Dockerfile
+    image: slater-home-gateway:latest
+    container_name: slater-home-gateway
+    restart: unless-stopped
+
+    # Expose locally only — NPM forwards 443 → this port
+    ports:
+      - "9302:9302"
+
+    env_file:
+      - .env.home
+
+    volumes:
+      # SQLite snapshot — same release as production catalog
+      - ./database/catalog.db:/app/database/catalog.db:ro
+      # Shotlist PDFs (read-only)
+      - ./static_assets/shotlist_pdfs:/app/static_assets/shotlist_pdfs:ro
+      # Activity logs
+      - ./.local/gatewayLogs:/app/logs
+      # NASA video archive — same CIFS volume as the legacy compose
+      - type: volume
+        source: nasa-archive
+        target: /archive
+        read_only: true
+        volume:
+          nocopy: true
+
+    environment:
+      NODE_ENV: production
+      HOME_GATEWAY_ROLE: home
+      PORT: 9302
+      DB_PATH: /app/database/catalog.db
+      SHOTLIST_PDF_DIR: /app/static_assets/shotlist_pdfs
+      VIDEO_ARCHIVE_ROOT: /archive
+      LOG_DIR: /app/logs
+      LOG_LEVEL: info
+      # GPU H.264 encoding via NVENC (requires GPU passthrough above)
+      VIDEO_ENCODER: h264_nvenc
+      # Debian (bookworm-slim) DejaVu font paths
+      WATERMARK_FONT_PATH: /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf
+      WATERMARK_MONO_FONT_PATH: /usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf
+      # NVIDIA Container Toolkit — expose GPU to ffmpeg NVENC
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: video,compute,utility
+
+    # NVIDIA GPU passthrough for ffmpeg NVENC.
+    # Uses Docker's native --gpus flag (deploy.resources) which works on
+    # Docker Desktop for Windows/WSL2. Do NOT use `runtime: nvidia` here —
+    # that is the Linux nvidia-container-runtime approach and is ignored on
+    # Docker Desktop.
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+    networks:
+      - slater-home-net
+
+networks:
+  slater-home-net:
+    driver: bridge
+
+volumes:
+  nasa-archive:
+    driver: local
+    driver_opts:
+      type: cifs
+      # username/password can be empty for guest/open shares
+      o: "addr=${NAS_HOST},vers=3.0,ro,username=${NAS_USER:-guest},password=${NAS_PASS:-},noperm,file_mode=0444,dir_mode=0555"
+      device: "//${NAS_HOST}/${NAS_SHARE}"
