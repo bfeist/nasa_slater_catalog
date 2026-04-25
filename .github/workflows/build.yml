@@ -90,7 +90,7 @@ jobs:
           ssh-keyscan -H "$PROD_HOST" >> ~/.ssh/known_hosts
 
           # Push SPA build to host
-          rsync -avzO --delete -e "ssh -i ~/.ssh/id_deploy" \
+          rsync -avzO --no-perms --delete -e "ssh -i ~/.ssh/id_deploy" \
             spa-dist/ "$PROD_USER@$PROD_HOST:$PROD_PATH_WEBROOT/"
 
           # Pull image, restart compose
