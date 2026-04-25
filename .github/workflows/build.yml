@@ -93,6 +93,10 @@ jobs:
           rsync -avzO --no-perms --delete -e "ssh -i ~/.ssh/id_deploy" \
             spa-dist/ "$PROD_USER@$PROD_HOST:$PROD_PATH_WEBROOT/"
 
+          # Push compose file to app root
+          rsync -avzO --no-perms -e "ssh -i ~/.ssh/id_deploy" \
+            compose.prod.yml "$PROD_USER@$PROD_HOST:$PROD_PATH_APPROOT/compose.prod.yml"
+
           # Pull image, restart compose
           ssh -i ~/.ssh/id_deploy "$PROD_USER@$PROD_HOST" bash -se <<EOF
             set -e
