@@ -185,7 +185,17 @@ export default function VideoPlayer({
     const onCanPlay = () => setStage((s) => (s === "error" ? s : "ready"));
     const onPause = () => setIsPlaying(false);
     const onPlay = () => setIsPlaying(true);
-    const onStalled = () => setStage((s) => (s === "error" ? s : "buffering"));
+    // `stalled` means the *download* stalled, but the video may still be playing
+    // from its existing buffer — don't set buffering unless playback actually stopped.
+    const onStalled = () => {
+      if (!vid.paused) return;
+      setStage((s) => (s === "error" ? s : "buffering"));
+    };
+    // Safety-net: if timeupdate fires the video is advancing, so clear any
+    // lingering buffering overlay (handles stall-while-playing edge cases).
+    const onTimeUpdateOverlay = () => {
+      if (!vid.paused) setStage((s) => (s === "buffering" ? "ready" : s));
+    };
     const onError = () => {
       const { title, detail } = describeMediaError(vid);
       setStage("error");
@@ -197,6 +207,7 @@ export default function VideoPlayer({
     vid.addEventListener("pause", onPause);
     vid.addEventListener("play", onPlay);
     vid.addEventListener("stalled", onStalled);
+    vid.addEventListener("timeupdate", onTimeUpdateOverlay);
     vid.addEventListener("error", onError);
     return () => {
       vid.removeEventListener("waiting", onWaiting);
@@ -205,6 +216,7 @@ export default function VideoPlayer({
       vid.removeEventListener("pause", onPause);
       vid.removeEventListener("play", onPlay);
       vid.removeEventListener("stalled", onStalled);
+      vid.removeEventListener("timeupdate", onTimeUpdateOverlay);
       vid.removeEventListener("error", onError);
     };
   }, [streamUrl, retrySession]);
