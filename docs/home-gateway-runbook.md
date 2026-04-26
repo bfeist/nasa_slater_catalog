@@ -24,7 +24,7 @@ The same codebase runs in three modes, picked from environment at startup:
 
 ## B. Local split-mode test (Docker for the gateway, same image as prod)
 
-The gateway always runs in Docker — locally and in production. The local override only swaps the CIFS volume for a bind mount and forces a local build.
+The gateway always runs in Docker — locally and in production — from the single [compose.home.yml](../compose.home.yml) file. The archive is mounted via CIFS in both environments; locally that means pointing `NAS_*` at your NAS the same way prod does.
 
 ### One-time setup
 
@@ -37,7 +37,7 @@ Edit [.env.home](../.env.home.example) and set:
 - `HOME_GATEWAY_SHARED_SECRET` — any random value; must match the catalog's value below.
 - `SLATER_SECRET` — same value as your main `.env` so DB HMACs validate.
 - `PUBLIC_ORIGIN=http://localhost:9300` — Vite's origin (the only origin the browser sees).
-- `LOCAL_ARCHIVE_PATH=/o` — host path to the archive (default `/o` for Windows + GitBash).
+- `NAS_HOST`, `NAS_USER`, `NAS_PASS`, `NAS_SHARE` — SMB credentials for the archive (compose mounts `//$NAS_HOST/$NAS_SHARE` read-only).
 
 Add the matching catalog-side env to your main `.env`:
 
@@ -106,9 +106,9 @@ Use the same value in both `.env.prod` (production catalog) and `.env.home` (hom
   - `SLATER_SECRET` — same as prod.
   - `PUBLIC_ORIGIN` — production site URL (e.g. `https://slaterfilmcatalog.benfeist.com`).
   - `NAS_HOST`, `NAS_USER`, `NAS_PASS`, `NAS_SHARE` — CIFS credentials.
-  - `LOCAL_ARCHIVE_PATH` is unused in prod (only `compose.home.local.yml` reads it).
+  - `NAS_HOST`, `NAS_USER`, `NAS_PASS`, `NAS_SHARE` are read by [compose.home.yml](../compose.home.yml) to mount the archive via the Docker CIFS volume driver.
 - Make sure `database/catalog.db` and `static_assets/shotlist_pdfs/` are present.
-- First boot (no local override — uses CIFS volume + GHCR image):
+- First boot:
   ```bash
   docker compose -f compose.home.yml --env-file .env.home up -d
   ```
@@ -135,7 +135,6 @@ Add secrets: `PROD_HOST`, `PROD_USER`, `PROD_PATH`, `PROD_SSH_KEY`. Register a s
 - [ ] `PUBLIC_ORIGIN` on the gateway is the **frontend** origin, not the API origin.
 - [ ] Production host can reach `HOME_GATEWAY_BASE_URL` over HTTPS — `curl https://<home>/healthz`.
 - [ ] DB on home and prod are the **same release**. Workflow D warns if `.last-shipped-release` doesn't match.
-- [ ] Legacy [docker-compose.yml](../docker-compose.yml) is unchanged — usable as a monolithic fallback during cutover.
 
 ---
 
@@ -152,7 +151,6 @@ Add secrets: `PROD_HOST`, `PROD_USER`, `PROD_PATH`, `PROD_SSH_KEY`. Register a s
 | Gateway token store        | [src/gateway/tokens.ts](../src/gateway/tokens.ts)                     |
 | Frontend session API       | [src/api/client.ts](../src/api/client.ts)                             |
 | Production catalog stack   | [compose.prod.yml](../compose.prod.yml)                               |
-| Home gateway stack (prod)  | [compose.home.yml](../compose.home.yml)                               |
-| Home gateway stack (local) | [compose.home.local.yml](../compose.home.local.yml)                   |
+| Home gateway stack         | [compose.home.yml](../compose.home.yml)                               |
 | Gateway image              | [docker/home-gateway/Dockerfile](../docker/home-gateway/Dockerfile)   |
 | CI workflows               | [.github/workflows/](../.github/workflows/)                           |

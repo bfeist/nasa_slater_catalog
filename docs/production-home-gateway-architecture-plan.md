@@ -250,9 +250,8 @@ There should never be a case where running `npm run dev` requires you to also st
 
 ### Compose layout
 
-Recommend three compose files in the repo:
+Recommend two compose files in the repo:
 
-- `docker-compose.yml` — current local-first deployment, kept for backward compatibility during transition.
 - `compose.prod.yml` — production-only stack: catalog API container, no archive mount, no PDFs, no `web` container.
 - `compose.home.yml` — home gateway stack: video-gateway container with archive + PDFs mounted read-only.
 
@@ -696,7 +695,7 @@ The current code already has the right initial seam:
 The current Docker setup should change like this:
 
 - keep `docker/api/Dockerfile` for the production catalog API
-- stop using `docker/web/Dockerfile` in production if host Nginx serves the SPA directly
+- the production host's existing Nginx serves the SPA directly — no `docker/web/` image is built or shipped
 - add a new `docker/home-gateway/Dockerfile` for the video and PDF gateway
 - the home gateway image can reuse the existing API image with a different entrypoint that mounts only the gateway routes, or it can be a slimmer dedicated image
 

@@ -8,16 +8,20 @@ and `/data` is a scratch space for prototype/pipeline output._
 
 ## What This Project Actually Is Now
 
-A local-only catalog and search tool for ~80 TB of archival NASA space-program
-video that lives on a local network share at `/o/`. The stack:
+A catalog and search tool for ~80 TB of archival NASA space-program video that
+lives on a local NAS. The stack:
 
 - **SQLite** (`database/catalog.db`) — single source of truth for catalog data
 - **Express** API (`src/server/`) — serves catalog data over HTTP
 - **React SPA** (`src/`) — browse and search the catalog
+- **Home gateway** (`src/gateway/`) — serves video bytes and shotlist PDFs from
+  the home network when the catalog runs in split (production) mode
 - **Python scripts** (`scripts/`) — populate and maintain the database
 
-The system will never be public. The video files are local. The web app is local.
-This informs every architecture decision.
+In production the catalog API is hosted publicly while the home gateway stays
+on the home network with the archive. In local dev everything runs as a single
+Express process via `npm run dev`. See [Deployment Topology](#deployment-topology)
+below for the full picture.
 
 ---
 
@@ -228,51 +232,67 @@ incremental backup tooling.
 
 ---
 
-## Docker Path
+## Deployment Topology
 
-If you ever want to containerize the app server (even locally), the natural split is:
+The app runs as a single Express process locally and is split into two
+independently-deployed pieces in production. Both deployments are containerised
+through Docker Compose; the local dev loop is not.
 
 ```
-┌─────────────────────────────────────────┐
-│  catalog-app container                  │
-│  ├── Node.js Express API                │
-│  ├── React SPA (served as static files) │
-│  └── mounts:                            │
-│       /database/catalog.db  (volume)    │
-│       /static_assets/       (read-only) │
-│       /o/                   (read-only) │
-└─────────────────────────────────────────┘
-
-Python scripts run on the HOST, not in the container.
-They write to database/catalog.db and static_assets/.
+                          ┌────────────────────────────────────────┐
+                          │  Production host (public)              │
+   Browser ── HTTPS ────► │  Host Nginx ──► /  static SPA          │
+                          │              └─► /api → catalog-api    │
+                          │                          (compose.prod)│
+                          │                          reads catalog.db
+                          └────────────────────────────────────────┘
+                                          │ HTTPS, shared-secret
+                                          │ POST /internal/sessions
+                                          ▼
+                          ┌────────────────────────────────────────┐
+   Browser ── HTTPS ────► │  Home gateway (private network +       │
+   /stream/<t>            │  Nginx Proxy Manager + Let's Encrypt)  │
+   /pdf/<t>               │                                        │
+                          │  slater-home-gateway container         │
+                          │   ├─ ffmpeg + NVENC (GPU passthrough)  │
+                          │   ├─ /archive   (CIFS, read-only)      │
+                          │   └─ shotlist_pdfs (read-only)         │
+                          │  (compose.home.yml)                    │
+                          └────────────────────────────────────────┘
 ```
 
-The Python pipeline has heavy ML dependencies (PyTorch, Qwen, marker-pdf,
-bitsandbytes) that don't belong in an app server container. Keep them on the host.
+Key points:
 
-A minimal `docker-compose.yml` would look like:
+- **The host's pre-existing Nginx serves the built SPA directly from disk.**
+  There is no `web` container and no Nginx image in the repo. The CI workflow
+  rsyncs the Vite build output to the host's webroot.
+- **Production runs only one container** (`docker/api/Dockerfile`, started by
+  [compose.prod.yml](../compose.prod.yml)) bound to `127.0.0.1:9311`. Host
+  Nginx proxies `/api/*` to it.
+- **The home gateway runs only on the home network** ([compose.home.yml](../compose.home.yml)),
+  exposing `/stream/*`, `/pdf/*`, `/healthz` through Nginx Proxy Manager.
+  `/internal/*` (token mint endpoints) is reachable only from the production
+  catalog API and gated by `HOME_GATEWAY_SHARED_SECRET`.
+- **The same codebase runs in three modes** picked from env at startup
+  (`monolithic`, `catalog`, `home`). Local dev (`npm run dev`) stays in
+  `monolithic` mode and serves video/PDFs directly through Express — no
+  containers required.
+- **Python ML pipeline scripts always run on the host**, never in a container.
+  They write to `database/catalog.db` and `static_assets/`.
 
-```yaml
-services:
-  catalog:
-    build: .
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./database:/app/database
-      - ./static_assets:/app/static_assets:ro
-      - /o:/o:ro # local network share
-    environment:
-      - NODE_ENV=production
-```
+### Compose files
 
-The Dockerfile would be a standard Node.js image running `npm run build`
-(Vite) and then `node dist/server/index.js`. No ML code, no Python.
+| File                                                                | Purpose                                                                                |
+| ------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| [compose.prod.yml](../compose.prod.yml)                             | Production catalog API only. No archive, no PDFs. Bound to `127.0.0.1:9311`.           |
+| [compose.home.yml](../compose.home.yml)                             | Home gateway. Mounts the NASA archive (CIFS) read-only + shotlist PDFs. NVENC enabled. |
+| [docker/api/Dockerfile](../docker/api/Dockerfile)                   | Catalog API image (`ghcr.io/<repo>/catalog-api`). Built by Workflow A.                 |
+| [docker/home-gateway/Dockerfile](../docker/home-gateway/Dockerfile) | Home gateway image (built locally by `npm run gateway:up`).                            |
 
-There is no compelling reason to host this on the public internet. Running a
-docker container locally and hitting `localhost:3000` is effectively the same
-user experience and avoids all the complexity of remote access to a local 80 TB
-drive.
+There is no `docker-compose.yml` and no `web` container. See
+[production-home-gateway-architecture-plan.md](production-home-gateway-architecture-plan.md)
+for the design rationale and [home-gateway-runbook.md](home-gateway-runbook.md)
+for operational steps.
 
 ---
 

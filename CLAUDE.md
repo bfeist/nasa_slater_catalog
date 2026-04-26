@@ -29,11 +29,35 @@ npm run test:all      # lint → tsc → tsc:server → build → vitest
 npm run test          # vitest only
 npm run lint          # eslint + stylelint
 
+# Home gateway (Docker, optional during local dev — only needed to test split mode)
+npm run gateway:up    # docker compose -f compose.home.yml up -d --build
+npm run gateway:logs
+npm run gateway:down
+
 # Python scripts (always use uv)
 uv run python scripts/shotlist/1a_marker_ocr.py
 uv run python scripts/shotlist/1c_llm_ocr.py
 uv run python scripts/shotlist/1d_build_fts_index.py
 ```
+
+## Deployment Topology
+
+Production is split into two independently-deployed services. Local dev runs as
+a single Express process — no containers required.
+
+- [compose.prod.yml](compose.prod.yml) — catalog API only, bound to
+  `127.0.0.1:9311`. Host Nginx (configured manually outside the repo) serves
+  the Vite SPA from disk and proxies `/api/*` to the container. CI rsyncs the
+  SPA build to the webroot. No `web` container exists.
+- [compose.home.yml](compose.home.yml) — home gateway. Mounts the NASA archive
+  (CIFS, read-only) and shotlist PDFs. ffmpeg + NVENC for streaming. Sits
+  behind Nginx Proxy Manager + Let's Encrypt at home.
+
+The same codebase picks its mode from env at startup: `monolithic` (dev),
+`catalog` (prod API), or `home` (gateway). See
+[docs/architecture.md](docs/architecture.md),
+[docs/production-home-gateway-architecture-plan.md](docs/production-home-gateway-architecture-plan.md),
+and [docs/home-gateway-runbook.md](docs/home-gateway-runbook.md).
 
 ## Project Layout
 

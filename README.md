@@ -47,4 +47,36 @@ data/            # All output data (gitignored)
 database/        # catalog.db (SQLite — source of truth)
 input_indexes/   # Source spreadsheets & metadata
 static_assets/   # Shotlist PDFs
+src/             # React SPA + Express API + home gateway service
+docker/          # Container images for catalog API and home gateway
 ```
+
+## Web App + Deployment
+
+The browse/search UI is a React SPA (`src/`) backed by an Express API
+(`src/server/`). For local development a single Express process serves
+everything:
+
+```bash
+npm run dev          # Vite on :9300, API on :9301 (proxied via /api/*)
+npm run test:all     # lint → tsc → tsc:server → build → vitest
+```
+
+Production splits into two independently-deployed services:
+
+- **Catalog API** — runs on a public host fronted by the host's existing Nginx,
+  which also serves the built SPA from disk. Container started by
+  [compose.prod.yml](compose.prod.yml). The Vite build output is rsynced to the
+  host's webroot by CI; there is no `web` container in the repo.
+- **Home gateway** — runs on the home network next to the NAS. Owns ffmpeg
+  streaming and shotlist PDF delivery. Container started by
+  [compose.home.yml](compose.home.yml) (`npm run gateway:up` for local testing).
+  Fronted by Nginx Proxy Manager + Let's Encrypt.
+
+Browsers always talk to the catalog API for metadata/auth and directly to the
+home gateway (over HTTPS, with short-lived signed tokens) for video bytes and
+PDFs. See:
+
+- [docs/architecture.md](docs/architecture.md) — current architecture & data model
+- [docs/production-home-gateway-architecture-plan.md](docs/production-home-gateway-architecture-plan.md) — split rationale
+- [docs/home-gateway-runbook.md](docs/home-gateway-runbook.md) — operational runbook
