@@ -119,7 +119,6 @@ export default function ShotlistPdfViewer({
 
   useEffect(() => {
     if (!activePdf) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPdfFile(null);
       return;
     }
