@@ -67,6 +67,7 @@
 }
 
 .submitBtn {
+  appearance: none;
   background: var(--color-link);
   border: 1px solid transparent;
   color: #ffffff;
@@ -78,13 +79,13 @@
   margin-top: 0.25rem;
 }
 
+.submitBtn:hover:not(:disabled) {
+  background: var(--color-link);
+}
+
 .submitBtn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
-}
-
-.submitBtn:not(:disabled):hover {
-  opacity: 0.85;
 }
 
 .errorMsg {
