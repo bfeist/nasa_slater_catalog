@@ -330,8 +330,10 @@ export function streamFile(
   };
 
   ffmpeg.stdout?.pipe(res);
+  const stderrLines: string[] = [];
   ffmpeg.stderr?.on("data", (data: Buffer) => {
     const line = data.toString().trim();
+    stderrLines.push(line);
     if (
       line.includes("frame=") ||
       line.includes("error") ||
@@ -351,7 +353,8 @@ export function streamFile(
   });
   ffmpeg.on("close", (code) => {
     if (code !== 0) {
-      ConsoleLogger.error(`[ffmpeg] process exited with code ${code} for ${fullPath}`);
+      const tail = stderrLines.slice(-20).join("\n");
+      ConsoleLogger.error(`[ffmpeg] process exited with code ${code} for ${fullPath}\n${tail}`);
     }
     res.end();
     if (opts.streamId) {
