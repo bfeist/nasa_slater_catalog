@@ -12,8 +12,9 @@ Excluded from the scan: any path containing `mpeg-proxies`, `mpeg_proxies`, `_pr
 ## Summary
 
 - Total Discovery tapes catalogued: **291**
-- **Safe to delete:** 68
-- **Keep (incomplete coverage or unknown content):** 223
+- **Already removed (file no longer on disk):** 149
+- **Safe to delete:** 0
+- **Keep (incomplete coverage or unknown content):** 142
 - Distinct film-roll identifiers extracted from master filenames: 2337
 - Master files whose name could not be parsed to an archive ID: 65 (listed at end)
 
@@ -26,644 +27,165 @@ For each Discovery tape, the script computes the set of *expected* film rolls fr
 
 It then checks whether every expected roll has a matching master file anywhere in the scan roots above. `Film` is treated as an alias for `FR`. FR numbers are matched with both 3- and 4-digit zero-padding (canonical: `FR-0748`). A tape is marked **safe to delete** only when every expected roll has a master file on disk AND the tape has no blank/unparseable shotlist rows that would imply unknown content was on that tape.
 
+## 🗑️ Already Removed
+
+These tape files are no longer present at their expected path on `O:/Master 1..4` — they have already been moved or deleted. Their roll coverage is shown for reference.
+
+| Tape | Folder | Rolls covered |
+|-----:|:-------|-------------:|
+| 507 | Master 1 | 0 |
+| 512 | Master 1 | 9 |
+| 513 | Master 1 | 8 |
+| 537 | Master 1 | 7 |
+| 541 | Master 1 | 8 |
+| 542 | Master 1 | 5 |
+| 544 | Master 1 | 9 |
+| 545 | Master 1 | 9 |
+| 546 | Master 1 | 2 |
+| 547 | Master 1 | 3 |
+| 561 | Master 1 | 6 |
+| 565 | Master 2 | 5 |
+| 566 | Master 2 | 6 |
+| 569 | Master 2 | 7 |
+| 570 | Master 2 | 5 |
+| 571 | Master 2 | 5 |
+| 573 | Master 2 | 8 |
+| 574 | Master 2 | 11 |
+| 575 | Master 2 | 6 |
+| 577 | Master 2 | 1 |
+| 580 | Master 2 | 3 |
+| 581 | Master 2 | 4 |
+| 582 | Master 2 | 3 |
+| 583 | Master 2 | 3 |
+| 584 | Master 2 | 6 |
+| 585 | Master 2 | 6 |
+| 586 | Master 2 | 6 |
+| 587 | Master 2 | 6 |
+| 588 | Master 2 | 5 |
+| 605 | Master 2 | 7 |
+| 607 | Master 2 | 7 |
+| 609 | Master 2 | 7 |
+| 617 | Master 2 | 1 |
+| 620 | Master 2 | 6 |
+| 621 | Master 2 | 5 |
+| 623 | Master 2 | 7 |
+| 624 | Master 2 | 5 |
+| 625 | Master 2 | 5 |
+| 626 | Master 3 | 5 |
+| 629 | Master 3 | 3 |
+| 642 | Master 3 | 1 |
+| 648 | Master 3 | 0 |
+| 649 | Master 3 | 0 |
+| 650 | Master 3 | 6 |
+| 651 | Master 3 | 5 |
+| 652 | Master 3 | 6 |
+| 653 | Master 3 | 7 |
+| 655 | Master 3 | 5 |
+| 656 | Master 3 | 5 |
+| 657 | Master 3 | 4 |
+| 658 | Master 3 | 5 |
+| 659 | Master 3 | 1 |
+| 660 | Master 3 | 6 |
+| 661 | Master 3 | 4 |
+| 662 | Master 3 | 2 |
+| 664 | Master 3 | 6 |
+| 665 | Master 3 | 5 |
+| 667 | Master 3 | 5 |
+| 671 | Master 3 | 5 |
+| 672 | Master 3 | 8 |
+| 673 | Master 3 | 5 |
+| 674 | Master 3 | 9 |
+| 677 | Master 3 | 5 |
+| 678 | Master 3 | 6 |
+| 684 | Master 3 | 0 |
+| 685 | Master 3 | 7 |
+| 686 | Master 3 | 3 |
+| 687 | Master 3 | 6 |
+| 688 | Master 3 | 5 |
+| 689 | Master 3 | 3 |
+| 691 | Master 3 | 2 |
+| 692 | Master 3 | 0 |
+| 693 | Master 3 | 0 |
+| 709 | Master 3 | 0 |
+| 713 | Master 4 | 0 |
+| 714 | Master 4 | 0 |
+| 715 | Master 4 | 0 |
+| 716 | Master 4 | 0 |
+| 717 | Master 4 | 0 |
+| 718 | Master 4 | 0 |
+| 719 | Master 4 | 0 |
+| 720 | Master 4 | 0 |
+| 721 | Master 4 | 0 |
+| 722 | Master 4 | 0 |
+| 723 | Master 4 | 0 |
+| 726 | Master 4 | 0 |
+| 727 | Master 4 | 0 |
+| 728 | Master 4 | 0 |
+| 729 | Master 4 | 0 |
+| 731 | Master 4 | 0 |
+| 744 | Master 4 | 0 |
+| 747 | Master 4 | 0 |
+| 748 | Master 4 | 0 |
+| 754 | Master 4 | 0 |
+| 755 | Master 4 | 1 |
+| 756 | Master 4 | 0 |
+| 757 | Master 4 | 0 |
+| 758 | Master 4 | 0 |
+| 759 | Master 4 | 0 |
+| 762 | Master 4 | 0 |
+| 763 | Master 4 | 0 |
+| 780 | Master 4 | 0 |
+| 781 | Master 4 | 0 |
+| 782 | Master 4 | 0 |
+| 783 | Master 4 | 0 |
+| 786 | Master 4 | 0 |
+| 787 | Master 4 | 0 |
+| 794 | Master 4 | 0 |
+| 797 | Master 4 | 0 |
+| 799 | Master 4 | 0 |
+| 800 | Master 4 | 0 |
+| 801 | Master 4 | 0 |
+| 802 | Master 4 | 0 |
+| 806 | Master 4 | 0 |
+| 808 | Master 4 | 0 |
+| 813 | Master 4 | 0 |
+| 814 | Master 4 | 0 |
+| 816 | Master 4 | 0 |
+| 817 | Master 4 | 0 |
+| 818 | Master 4 | 0 |
+| 828 | Master 4 | 0 |
+| 832 | Master 4 | 0 |
+| 833 | Master 4 | 0 |
+| 835 | Master 4 | 0 |
+| 837 | Master 4 | 0 |
+| 839 | Master 4 | 0 |
+| 840 | Master 4 | 0 |
+| 845 | Master 4 | 0 |
+| 847 | Master 4 | 0 |
+| 850 | Master 4 | 0 |
+| 859 | Master 4 | 0 |
+| 860 | Master 4 | 0 |
+| 861 | Master 4 | 0 |
+| 862 | Master 4 | 0 |
+| 864 | Master 4 | 0 |
+| 867 | Master 4 | 0 |
+| 873 | Master 4 | 0 |
+| 874 | Master 4 | 0 |
+| 875 | Master 4 | 0 |
+| 876 | Master 4 | 0 |
+| 877 | Master 4 | 0 |
+| 878 | Master 4 | 0 |
+| 879 | Master 4 | 0 |
+| 880 | Master 4 | 0 |
+| 882 | Master 4 | 0 |
+| 883 | Master 4 | 0 |
+| 884 | Master 4 | 0 |
+| 885 | Master 4 | 0 |
+| 886 | Master 4 | 0 |
+
 ## ✅ Safe to Delete
 
-These tapes have a per-roll master file on disk for every known film roll they contain.
-
-| Tape | Folder | File | Rolls covered |
-|-----:|:-------|:-----|--------------:|
-| 512 | Master 1 | `Tape 512 - Self Contained.mov` | 9 |
-| 513 | Master 1 | `Tape 513 - Self Contained.mov` | 8 |
-| 537 | Master 1 | `Tape 537 - Self Contained.mov` | 7 |
-| 541 | Master 1 | `Tape 541 - Self Contained.mov` | 8 |
-| 542 | Master 1 | `Tape 542 - Self Contained.mov` | 5 |
-| 544 | Master 1 | `Tape 544 - Self Contained.mov` | 9 |
-| 545 | Master 1 | `Tape 545 - Self Contained.mov` | 9 |
-| 546 | Master 1 | `Tape 546 - Self Contained.mov` | 2 |
-| 547 | Master 1 | `Tape 547 - Self Contained.mov` | 3 |
-| 561 | Master 1 | `Tape 561 - Self Contained.mov` | 6 |
-| 565 | Master 2 | `Tape 565 - Self Contained.mov` | 5 |
-| 566 | Master 2 | `Tape 566 - Self Contained.mov` | 6 |
-| 569 | Master 2 | `Tape 569 - Self Contained.mov` | 7 |
-| 570 | Master 2 | `Tape 570 - Self Contained.mov` | 5 |
-| 571 | Master 2 | `Tape 571 - Self Contained.mov` | 5 |
-| 573 | Master 2 | `Tape 573 - Self Contained.mov` | 8 |
-| 574 | Master 2 | `Tape 574 - Self Contained.mov` | 11 |
-| 575 | Master 2 | `Tape 575 - Self Contained.mov` | 6 |
-| 577 | Master 2 | `Tape 577 - Self Contained.mov` | 1 |
-| 580 | Master 2 | `Tape 580 - Self Contained.mov` | 3 |
-| 581 | Master 2 | `Tape 581 - Self Contained.mov` | 4 |
-| 582 | Master 2 | `Tape 582 - Self Contained.mov` | 3 |
-| 583 | Master 2 | `Tape 583 - Self Contained.mov` | 3 |
-| 584 | Master 2 | `Tape 584 - Self Contained.mov` | 6 |
-| 585 | Master 2 | `Tape 585 - Self Contained.mov` | 6 |
-| 586 | Master 2 | `Tape 586 - Self Contained.mov` | 6 |
-| 587 | Master 2 | `Tape 587 - Self Contained.mov` | 6 |
-| 588 | Master 2 | `Tape 588 - Self Contained.mov` | 5 |
-| 605 | Master 2 | `Tape 605 - Self Contained.mov` | 7 |
-| 607 | Master 2 | `Tape 607 - Self Contained.mov` | 7 |
-| 609 | Master 2 | `Tape 609 - Self Contained.mov` | 7 |
-| 617 | Master 2 | `Tape 617 - Self Contained.mov` | 1 |
-| 620 | Master 2 | `Tape 620 - Self Contained.mov` | 6 |
-| 621 | Master 2 | `Tape 621 - Self Contained.mov` | 5 |
-| 623 | Master 2 | `Tape 623 - Self Contained.mov` | 7 |
-| 624 | Master 2 | `Tape 624 - Self Contained.mov` | 5 |
-| 625 | Master 2 | `Tape 625 - Self Contained.mov` | 5 |
-| 626 | Master 3 | `Tape 626 - Self Contained.mov` | 5 |
-| 629 | Master 3 | `Tape 629 - Self Contained.mov` | 3 |
-| 642 | Master 3 | `Tape 642 - Self Contained.mov` | 1 |
-| 650 | Master 3 | `Tape 650 - Self Contained.mov` | 6 |
-| 651 | Master 3 | `Tape 651 - Self Contained.mov` | 5 |
-| 652 | Master 3 | `Tape 652 - Self Contained.mov` | 6 |
-| 653 | Master 3 | `Tape 653 - Self Contained.mov` | 7 |
-| 655 | Master 3 | `Tape 655 - Self Contained.mov` | 5 |
-| 656 | Master 3 | `Tape 656 - Self Contained.mov` | 5 |
-| 657 | Master 3 | `Tape 657 - Self Contained.mov` | 4 |
-| 658 | Master 3 | `Tape 658 - Self Contained.mov` | 5 |
-| 659 | Master 3 | `Tape 659 - Self Contained.mov` | 1 |
-| 660 | Master 3 | `Tape 660 - Self Contained.mov` | 6 |
-| 661 | Master 3 | `Tape 661 - Self Contained.mov` | 4 |
-| 662 | Master 3 | `Tape 662 - Self Contained.mov` | 2 |
-| 664 | Master 3 | `Tape 664 - Self Contained.mov` | 6 |
-| 665 | Master 3 | `Tape 665 - Self Contained.mov` | 5 |
-| 667 | Master 3 | `Tape 667 - Self Contained.mov` | 5 |
-| 671 | Master 3 | `Tape 671 - Self Contained.mov` | 5 |
-| 672 | Master 3 | `Tape 672 - Self Contained.mov` | 8 |
-| 673 | Master 3 | `Tape 673 - Self Contained.mov` | 5 |
-| 674 | Master 3 | `Tape 674 - Self Contained.mov` | 9 |
-| 677 | Master 3 | `Tape 677 - Self Contained.mov` | 5 |
-| 678 | Master 3 | `Tape 678 - Self Contained.mov` | 6 |
-| 685 | Master 3 | `Tape 685 - Self Contained.mov` | 7 |
-| 686 | Master 3 | `Tape 686 - Self Contained.mov` | 3 |
-| 687 | Master 3 | `Tape 687 - Self Contained.mov` | 6 |
-| 688 | Master 3 | `Tape 688 - Self Contained.mov` | 5 |
-| 689 | Master 3 | `Tape 689 - Self Contained.mov` | 3 |
-| 691 | Master 3 | `Tape 691 - Self Contained.mov` | 2 |
-| 755 | Master 4 | `Tape 755 - Self Contained.mov` | 1 |
-
-### Detail per safe-to-delete tape
-
-#### Tape 512 — `Master 1/Tape 512 - Self Contained.mov`
-
-- `FR-0306` → `FR-Masters/Split Discovery Reels - Masters/255-FR-0306_HD_MASTER.mov`
-- `FR-0343` → `FR-Masters/255-FR-0343_HD_MASTER.mov` (+1 more)
-- `FR-0356` → `FR-Masters/Split Discovery Reels - Masters/255-FR-0356_HD_MASTER.mov`
-- `FR-0389` → `FR-Masters/Split Discovery Reels - Masters/255-FR-0389_HD_MASTER.mov`
-- `FR-0480` → `FR-Masters/Split Discovery Reels - Masters/255-FR-0480_HD_MASTER.mov`
-- `FR-0552` → `FR-Masters/Split Discovery Reels - Masters/255-FR-0552_HD_MASTER.mov`
-- `FR-0672` → `FR-Masters/Split Discovery Reels - Masters/255-FR-0672_HD_MASTER.mov`
-- `FR-0685` → `FR-Masters/Split Discovery Reels - Masters/255-FR-0685_HD_MASTER.mov`
-- `FR-0710` → `FR-Masters/Apollo 13/255-FR-0710_HD_MASTER_V2.mov` (+2 more)
-
-#### Tape 513 — `Master 1/Tape 513 - Self Contained.mov`
-
-- `FR-0748` → `FR-Masters/255-FR-0748_HD_MASTER.mov` (+1 more)
-- `FR-0971` → `FR-Masters/Split Discovery Reels - Masters/255-FR-0971_HD_MASTER.mov`
-- `FR-1025` → `FR-Masters/Split Discovery Reels - Masters/255-FR-1025_HD_MASTER.mov`
-- `FR-1459` → `FR-Masters/Split Discovery Reels - Masters/255-FR-1459_HD_MASTER.mov`
-- `FR-4757` → `FR-Masters/Split Discovery Reels - Masters/255-FR-4757_HD_MASTER.mov`
-- `FR-4993` → `FR-Masters/Split Discovery Reels - Masters/255-FR-4993_HD_MASTER.mov`
-- `FR-5603` → `FR-Masters/Split Discovery Reels - Masters/255-FR-5603_HD_MASTER.mov`
-- `FR-8428` → `FR-Masters/Split Discovery Reels - Masters/255-FR-8428_HD_MASTER.mov`
-
-#### Tape 537 — `Master 1/Tape 537 - Self Contained.mov`
-
-- `FR-0145` → `FR-Masters/255-FR-0145_HD_MASTER.mov` (+1 more)
-- `FR-0163` → `FR-Masters/Split Discovery Reels - Masters/255-FR-0163_HD_MASTER.mov`
-- `FR-0166-1` → `FR-Masters/Split Discovery Reels - Masters/255-FR-0166-1_HD_MASTER.mov`
-- `FR-0419` → `FR-Masters/Split Discovery Reels - Masters/255-FR-0419_HD_MASTER.mov`
-- `FR-4502` → `FR-Masters/Split Discovery Reels - Masters/255-FR-4502_HD_MASTER.mov`
-- `FR-4653` → `FR-Masters/additional_masters_2026-05/255-FR-4653_HD_MASTER.mov`
-- `FR-4896` → `FR-Masters/Split Discovery Reels - Masters/255-FR-4896_HD_MASTER.mov`
-
-#### Tape 541 — `Master 1/Tape 541 - Self Contained.mov`
-
-- `FR-0489` → `FR-Masters/255-FR-0489_HD_MASTER.mov` (+1 more)
-- `FR-0947` → `FR-Masters/Split Discovery Reels - Masters/255-FR-0947_HD_MASTER.mov`
-- `FR-0948` → `FR-Masters/Split Discovery Reels - Masters/255-FR-0948_HD_MASTER.mov`
-- `FR-1057` → `FR-Masters/Split Discovery Reels - Masters/255-FR-1057_HD_MASTER.mov`
-- `FR-1824` → `FR-Masters/Split Discovery Reels - Masters/255-FR-1824_HD_MASTER.mov`
-- `FR-4041` → `FR-Masters/Split Discovery Reels - Masters/255-FR-4041_HD_MASTER.mov`
-- `FR-4196` → `FR-Masters/Split Discovery Reels - Masters/255-FR-4196_HD_MASTER.mov`
-- `FR-4876` → `FR-Masters/255-FR-4876_HD_MASTER.mov` (+1 more)
-
-#### Tape 542 — `Master 1/Tape 542 - Self Contained.mov`
-
-- `FR-5111` → `FR-Masters/255-FR-5111_HD_MASTER.mov` (+2 more)
-- `FR-5113` → `FR-Masters/Split Discovery Reels - Masters/255-FR-5113_HD_MASTER.mov`
-- `FR-5933` → `FR-Masters/Split Discovery Reels - Masters/255-FR-5933_HD_MASTER.mov`
-- `FR-6042` → `FR-Masters/Split Discovery Reels - Masters/255-FR-6042_HD_MASTER.mov`
-- `FR-6043` → `FR-Masters/Split Discovery Reels - Masters/255-FR-6043_HD_MASTER.mov`
-
-#### Tape 544 — `Master 1/Tape 544 - Self Contained.mov`
-
-- `FR-4864` → `FR-Masters/Split Discovery Reels - Masters/255-FR-4864_HD_MASTER.mov`
-- `FR-4912` → `FR-Masters/Split Discovery Reels - Masters/255-FR-4912_HD_MASTER.mov`
-- `FR-5640` → `FR-Masters/Split Discovery Reels - Masters/255-FR-5640_HD_MASTER.mov`
-- `FR-6261` → `FR-Masters/Split Discovery Reels - Masters/255-FR-6261_HD_MASTER.mov`
-- `FR-6930` → `FR-Masters/Split Discovery Reels - Masters/255-FR-6930_HD_MASTER.mov`
-- `FR-6950` → `FR-Masters/Split Discovery Reels - Masters/255-FR-6950_HD_MASTER.mov`
-- `FR-7097` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7097_HD_MASTER.mov`
-- `FR-7420` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7420_HD_MASTER.mov`
-- `FR-7440` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7440_HD_MASTER.mov`
-
-#### Tape 545 — `Master 1/Tape 545 - Self Contained.mov`
-
-- `FR-7546` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7546_HD_MASTER.mov`
-- `FR-7560` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7560_HD_MASTER.mov`
-- `FR-7614` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7614_HD_MASTER.mov`
-- `FR-7615` → `FR-Masters/additional_masters_2026-05/255-FR-7615_HD_MASTER.mov` (+1 more)
-- `FR-7629` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7629_HD_MASTER.mov`
-- `FR-7709` → `FR-Masters/Apollo 11/255-fr-7709_3K_jun21.mov` (+1 more)
-- `FR-7742` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7742_HD_MASTER.mov`
-- `FR-7743` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7743_HD_MASTER.mov`
-- `FR-7868` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7868_HD_MASTER.mov`
-
-#### Tape 546 — `Master 1/Tape 546 - Self Contained.mov`
-
-- `FR-7762` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7762_HD_MASTER.mov`
-- `FR-8268` → `FR-Masters/Split Discovery Reels - Masters/255-FR-8268_HD_MASTER.mov`
-
-#### Tape 547 — `Master 1/Tape 547 - Self Contained.mov`
-
-- `FR-0597` → `FR-Masters/Split Discovery Reels - Masters/255-FR-0597_HD_MASTER.mov`
-- `FR-0598` → `FR-Masters/Split Discovery Reels - Masters/255-FR-0598_HD_MASTER.mov`
-- `FR-0599` → `FR-Masters/Split Discovery Reels - Masters/255-FR-0599_HD_MASTER.mov`
-
-#### Tape 561 — `Master 1/Tape 561 - Self Contained.mov`
-
-- `FR-3170` → `FR-Masters/Split Discovery Reels - Masters/255-FR-3170_HD_MASTER.mov`
-- `FR-6268` → `FR-Masters/Split Discovery Reels - Masters/255-FR-6268_HD_MASTER.mov`
-- `FR-6269` → `FR-Masters/Split Discovery Reels - Masters/255-FR-6269_HD_MASTER.mov`
-- `FR-6363` → `FR-Masters/Split Discovery Reels - Masters/255-FR-6363_HD_MASTER.mov`
-- `FR-6917` → `FR-Masters/Split Discovery Reels - Masters/255-FR-6917_HD_MASTER.mov`
-- `FR-7119` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7119_HD_MASTER.mov`
-
-#### Tape 565 — `Master 2/Tape 565 - Self Contained.mov`
-
-- `FR-7687` → `FR-Masters/Apollo 11/255-fr-7687_3K_jun13.mov` (+1 more)
-- `FR-7772` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7772_HD_MASTER.mov`
-- `FR-7814` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7814_HD_MASTER.mov`
-- `FR-8108` → `FR-Masters/Split Discovery Reels - Masters/255-FR-8108_HD_MASTER.mov`
-- `FR-8252` → `FR-Masters/Apollo 13/FR-8252.mov` (+3 more)
-
-#### Tape 566 — `Master 2/Tape 566 - Self Contained.mov`
-
-- `FR-1274` → `FR-Masters/Split Discovery Reels - Masters/255-FR-1274_HD_MASTER.mov`
-- `FR-6182` → `FR-Masters/Split Discovery Reels - Masters/255-FR-6182_HD_MASTER.mov`
-- `FR-8253` → `FR-Masters/255-FR-8253_2K_MASTER.mov` (+3 more)
-- `FR-8255` → `FR-Masters/Apollo 13/FR-8255.mov` (+1 more)
-- `FR-8262` → `FR-Masters/Split Discovery Reels - Masters/255-FR-8262_HD_MASTER.mov`
-- `FR-8263` → `FR-Masters/Split Discovery Reels - Masters/255-FR-8263_HD_MASTER.mov`
-
-#### Tape 569 — `Master 2/Tape 569 - Self Contained.mov`
-
-- `FR-8951` → `FR-Masters/Split Discovery Reels - Masters/255-FR-8951_HD_MASTER.mov`
-- `FR-8955` → `FR-Masters/Split Discovery Reels - Masters/255-FR-8955_HD_MASTER.mov`
-- `FR-8957` → `FR-Masters/255-FR-8957_HD_MASTER.mov` (+1 more)
-- `FR-8958` → `FR-Masters/additional_masters_2026-05/255-FR-8958_HD_MASTER_PARTIAL.mov`
-- `FR-8964` → `FR-Masters/Split Discovery Reels - Masters/255-FR-8964_HD_MASTER.mov`
-- `FR-9288` → `FR-Masters/additional_masters_2026-05/255-FR-9288_HD_MASTER.mov` (+1 more)
-- `FR-9579` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9579_HD_MASTER.mov`
-
-#### Tape 570 — `Master 2/Tape 570 - Self Contained.mov`
-
-- `FR-9611` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9611_HD_MASTER.mov`
-- `FR-B153` → `FR-Masters/Split Discovery Reels - Masters/255-FR-B153_HD_MASTER.mov`
-- `FR-B159` → `FR-Masters/Split Discovery Reels - Masters/255-FR-B159_HD_MASTER.mov`
-- `FR-B545` → `FR-Masters/Split Discovery Reels - Masters/255-FR-B545_HD_MASTER.mov`
-- `FR-B960` → `FR-Masters/Split Discovery Reels - Masters/255-FR-B960_HD_MASTER.mov`
-
-#### Tape 571 — `Master 2/Tape 571 - Self Contained.mov`
-
-- `FR-1136` → `FR-Masters/Split Discovery Reels - Masters/255-FR-1136_HD_MASTER.mov`
-- `FR-1219` → `FR-Masters/Apollo 13/255-FR-1219.mov` (+2 more)
-- `FR-1220` → `FR-Masters/Split Discovery Reels - Masters/255-FR-1220_HD_MASTER.mov`
-- `FR-A788` → `FR-Masters/Split Discovery Reels - Masters/255-FR-A788_HD_MASTER.mov`
-- `FR-C007` → `FR-Masters/Split Discovery Reels - Masters/255-FR-C007_HD_MASTER.mov`
-
-#### Tape 573 — `Master 2/Tape 573 - Self Contained.mov`
-
-- `FR-2594` → `FR-Masters/Split Discovery Reels - Masters/255-FR-2594_HD_MASTER.mov`
-- `FR-2727` → `FR-Masters/Split Discovery Reels - Masters/255-FR-2727_HD_MASTER.mov`
-- `FR-2896` → `FR-Masters/Split Discovery Reels - Masters/255-FR-2896_HD_MASTER.mov`
-- `FR-3166` → `FR-Masters/Split Discovery Reels - Masters/255-FR-3166_HD_MASTER.mov`
-- `FR-3659` → `FR-Masters/Split Discovery Reels - Masters/255-FR-3659_HD_MASTER.mov`
-- `FR-3782` → `FR-Masters/Split Discovery Reels - Masters/255-FR-3782_HD_MASTER.mov`
-- `FR-3793` → `FR-Masters/Split Discovery Reels - Masters/255-FR-3793_HD_MASTER.mov`
-- `FR-3802` → `FR-Masters/Split Discovery Reels - Masters/255-FR-3802_HD_MASTER.mov`
-
-#### Tape 574 — `Master 2/Tape 574 - Self Contained.mov`
-
-- `FR-3806` → `FR-Masters/Split Discovery Reels - Masters/255-FR-3806_HD_MASTER.mov`
-- `FR-3811` → `FR-Masters/Split Discovery Reels - Masters/255-FR-3811_HD_MASTER.mov`
-- `FR-3838` → `FR-Masters/Split Discovery Reels - Masters/255-FR-3838_HD_MASTER.mov`
-- `FR-3856` → `FR-Masters/Split Discovery Reels - Masters/255-FR-3856_HD_MASTER.mov`
-- `FR-3859` → `FR-Masters/Split Discovery Reels - Masters/255-FR-3859_HD_MASTER.mov`
-- `FR-3861` → `FR-Masters/Split Discovery Reels - Masters/255-FR-3861_HD_MASTER.mov`
-- `FR-3893` → `FR-Masters/Split Discovery Reels - Masters/255-FR-3893_HD_MASTER.mov`
-- `FR-3988` → `FR-Masters/Split Discovery Reels - Masters/255-FR-3988_HD_MASTER.mov`
-- `FR-4201` → `FR-Masters/Split Discovery Reels - Masters/255-FR-4201_HD_MASTER.mov`
-- `FR-4330` → `FR-Masters/Split Discovery Reels - Masters/255-FR-4330_HD_MASTER.mov`
-- `FR-5977` → `FR-Masters/Split Discovery Reels - Masters/255-FR-5977_HD_MASTER.mov`
-
-#### Tape 575 — `Master 2/Tape 575 - Self Contained.mov`
-
-- `FR-4885` → `FR-Masters/Split Discovery Reels - Masters/255-FR-4885_HD_MASTER.mov`
-- `FR-5033` → `FR-Masters/Split Discovery Reels - Masters/255-FR-5033_HD_MASTER.mov`
-- `FR-5566` → `FR-Masters/Split Discovery Reels - Masters/255-FR-5566_HD_MASTER.mov`
-- `FR-5588` → `FR-Masters/Split Discovery Reels - Masters/255-FR-5588_HD_MASTER.mov`
-- `FR-5972` → `FR-Masters/Split Discovery Reels - Masters/255-FR-5972_HD_MASTER.mov`
-- `FR-5974` → `FR-Masters/Split Discovery Reels - Masters/255-FR-5974_HD_MASTER.mov`
-
-#### Tape 577 — `Master 2/Tape 577 - Self Contained.mov`
-
-- `FR-4109` → `FR-Masters/Split Discovery Reels - Masters/255-FR-4109_HD_MASTER.mov`
-
-#### Tape 580 — `Master 2/Tape 580 - Self Contained.mov`
-
-- `FR-B964` → `FR-Masters/Split Discovery Reels - Masters/255-FR-B964_HD_MASTER.mov`
-- `FR-B996` → `FR-Masters/Split Discovery Reels - Masters/255-FR-B996_HD_MASTER.mov`
-- `FR-C027` → `FR-Masters/Split Discovery Reels - Masters/255-FR-C027_HD_MASTER.mov`
-
-#### Tape 581 — `Master 2/Tape 581 - Self Contained.mov`
-
-- `FR-D504` → `FR-Masters/Split Discovery Reels - Masters/255-FR-D504_HD_MASTER.mov`
-- `FR-D513` → `FR-Masters/Split Discovery Reels - Masters/255-FR-D513_HD_MASTER.mov`
-- `FR-D514` → `FR-Masters/Split Discovery Reels - Masters/255-FR-D514_HD_MASTER.mov`
-- `FR-D530` → `FR-Masters/Split Discovery Reels - Masters/255-FR-D530_HD_MASTER.mov`
-
-#### Tape 582 — `Master 2/Tape 582 - Self Contained.mov`
-
-- `FR-D535` → `FR-Masters/255-FR-D535_HD_MASTER.mov` (+1 more)
-- `FR-D538` → `FR-Masters/Split Discovery Reels - Masters/255-FR-D538_HD_MASTER.mov`
-- `FR-D546` → `FR-Masters/Split Discovery Reels - Masters/255-FR-D546_HD_MASTER.mov`
-
-#### Tape 583 — `Master 2/Tape 583 - Self Contained.mov`
-
-- `FR-D659` → `FR-Masters/Split Discovery Reels - Masters/255-FR-D659_HD_MASTER.mov`
-- `FR-D660` → `FR-Masters/Split Discovery Reels - Masters/255-FR-D660_HD_MASTER.mov`
-- `FR-D661` → `FR-Masters/Split Discovery Reels - Masters/255-FR-D661_HD_MASTER.mov`
-
-#### Tape 584 — `Master 2/Tape 584 - Self Contained.mov`
-
-- `FR-D588` → `FR-Masters/255-FR-D588_HD_MASTER.mov` (+1 more)
-- `FR-D619` → `FR-Masters/additional_masters_2026-05/255-FR-D619_HD_MASTER.mov` (+1 more)
-- `FR-D623` → `FR-Masters/Split Discovery Reels - Masters/255-FR-D623_HD_MASTER.mov`
-- `FR-D627` → `FR-Masters/Split Discovery Reels - Masters/255-FR-D627_HD_MASTER.mov`
-- `FR-D655` → `FR-Masters/Split Discovery Reels - Masters/255-FR-D655_HD_MASTER.mov`
-- `FR-D656` → `FR-Masters/Split Discovery Reels - Masters/255-FR-D656_HD_MASTER.mov`
-
-#### Tape 585 — `Master 2/Tape 585 - Self Contained.mov`
-
-- `FR-D580` → `FR-Masters/Split Discovery Reels - Masters/255-FR-D580_HD_MASTER.mov`
-- `FR-D581` → `FR-Masters/Split Discovery Reels - Masters/255-FR-D581_HD_MASTER.mov`
-- `FR-D582` → `FR-Masters/Split Discovery Reels - Masters/255-FR-D582_HD_MASTER.mov`
-- `FR-D583` → `FR-Masters/Split Discovery Reels - Masters/255-FR-D583_HD_MASTER.mov`
-- `FR-D584` → `FR-Masters/Split Discovery Reels - Masters/255-FR-D584_HD_MASTER.mov`
-- `FR-D585` → `FR-Masters/Split Discovery Reels - Masters/255-FR-D585_HD_MASTER.mov`
-
-#### Tape 586 — `Master 2/Tape 586 - Self Contained.mov`
-
-- `FR-B539` → `FR-Masters/255-FR-B539_HD_MASTER.mov` (+1 more)
-- `FR-B641` → `FR-Masters/255-FR-B641_HD_MASTER.mov` (+1 more)
-- `FR-B678` → `FR-Masters/255-FR-B678_HD_MASTER.mov` (+1 more)
-- `FR-B694` → `FR-Masters/Split Discovery Reels - Masters/255-FR-B694_HD_MASTER.mov`
-- `FR-B746` → `FR-Masters/Split Discovery Reels - Masters/255-FR-B746_HD_MASTER.mov`
-- `FR-B747` → `FR-Masters/Split Discovery Reels - Masters/255-FR-B747_HD_MASTER.mov`
-
-#### Tape 587 — `Master 2/Tape 587 - Self Contained.mov`
-
-- `FR-B766` → `FR-Masters/Split Discovery Reels - Masters/255-FR-B766_HD_MASTER.mov`
-- `FR-B967` → `FR-Masters/Split Discovery Reels - Masters/255-FR-B967_HD_MASTER.mov`
-- `FR-B968` → `FR-Masters/Split Discovery Reels - Masters/255-FR-B968_HD_MASTER.mov`
-- `FR-C061` → `FR-Masters/Split Discovery Reels - Masters/255-FR-C061_HD_MASTER.mov`
-- `FR-C075` → `FR-Masters/Split Discovery Reels - Masters/255-FR-C075_HD_MASTER.mov`
-- `FR-C076` → `FR-Masters/Split Discovery Reels - Masters/255-FR-C076_HD_MASTER.mov`
-
-#### Tape 588 — `Master 2/Tape 588 - Self Contained.mov`
-
-- `FR-C141` → `FR-Masters/Split Discovery Reels - Masters/255-FR-C141_HD_MASTER.mov`
-- `FR-C142` → `FR-Masters/Split Discovery Reels - Masters/255-FR-C142_HD_MASTER.mov`
-- `FR-C193` → `FR-Masters/Split Discovery Reels - Masters/255-FR-C193_HD_MASTER.mov`
-- `FR-C197` → `FR-Masters/Split Discovery Reels - Masters/255-FR-C197_HD_MASTER.mov`
-- `FR-C204` → `FR-Masters/Split Discovery Reels - Masters/255-FR-C204_HD_MASTER.mov`
-
-#### Tape 605 — `Master 2/Tape 605 - Self Contained.mov`
-
-- `FR-6120` → `FR-Masters/Split Discovery Reels - Masters/255-FR-6120_HD_MASTER.mov`
-- `FR-7073` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7073_HD_MASTER.mov`
-- `FR-7074` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7074_HD_MASTER.mov`
-- `FR-7108` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7108_HD_MASTER.mov`
-- `FR-7167` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7167_HD_MASTER.mov`
-- `FR-7168` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7168_HD_MASTER.mov`
-- `FR-7169` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7169_HD_MASTER.mov`
-
-#### Tape 607 — `Master 2/Tape 607 - Self Contained.mov`
-
-- `FR-7041` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7041_HD_MASTER.mov`
-- `FR-7104` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7104_HD_MASTER.mov`
-- `FR-7126` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7126_HD_MASTER.mov`
-- `FR-7155` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7155_HD_MASTER.mov`
-- `FR-7194` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7194_HD_MASTER.mov`
-- `FR-7197` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7197_HD_MASTER.mov`
-- `FR-7198` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7198_HD_MASTER.mov`
-
-#### Tape 609 — `Master 2/Tape 609 - Self Contained.mov`
-
-- `FR-0792` → `FR-Masters/255-FR-0792_HD_MASTER.mov` (+1 more)
-- `FR-0796` → `FR-Masters/Split Discovery Reels - Masters/255-FR-0796_HD_MASTER.mov`
-- `FR-7217` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7217_HD_MASTER.mov`
-- `FR-7218` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7218_HD_MASTER.mov`
-- `FR-7240` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7240_HD_MASTER.mov`
-- `FR-7243` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7243_HD_MASTER.mov`
-- `FR-7328` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7328_HD_MASTER.mov`
-
-#### Tape 617 — `Master 2/Tape 617 - Self Contained.mov`
-
-- `FR-8953` → `FR-Masters/255-FR-8953_HD_MASTER.mov` (+1 more)
-
-#### Tape 620 — `Master 2/Tape 620 - Self Contained.mov`
-
-- `FR-8221` → `FR-Masters/additional_masters_2026-05/255-FR-8221_HD_MASTER.mov` (+1 more)
-- `FR-8227` → `FR-Masters/additional_masters_2026-05/255-FR-8227_HD_MASTER.mov` (+1 more)
-- `FR-8364` → `FR-Masters/Split Discovery Reels - Masters/255-FR-8364_HD_MASTER.mov`
-- `FR-8442` → `FR-Masters/additional_masters_2026-05/255-FR-8442_HD_MASTER.mov` (+1 more)
-- `FR-8924` → `FR-Masters/additional_masters_2026-05/255-FR-8924_HD_MASTER.mov` (+1 more)
-- `JSC-0623` → `FR-Masters/additional_masters_2026-05/JSC-0623_HD_MASTER.mov` (+1 more)
-
-#### Tape 621 — `Master 2/Tape 621 - Self Contained.mov`
-
-- `FR-9103` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9103_HD_MASTER.mov`
-- `FR-9111` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9111_HD_MASTER.mov`
-- `FR-9198` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9198_HD_MASTER.mov`
-- `FR-9318` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9318_HD_MASTER.mov`
-- `FR-9427` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9427_HD_MASTER.mov`
-
-#### Tape 623 — `Master 2/Tape 623 - Self Contained.mov`
-
-- `FR-9974` → `FR-Masters/255-FR-9974_HD_MASTER.mov` (+1 more)
-- `FR-9975` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9975_HD_MASTER.mov`
-- `FR-9986` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9986_HD_MASTER.mov`
-- `FR-A190` → `FR-Masters/Split Discovery Reels - Masters/255-FR-A190_HD_MASTER.mov`
-- `FR-A681` → `FR-Masters/Split Discovery Reels - Masters/255-FR-A681_HD_MASTER.mov`
-- `FR-A927` → `FR-Masters/Split Discovery Reels - Masters/255-FR-A927_HD_MASTER.mov`
-- `FR-B241` → `FR-Masters/Split Discovery Reels - Masters/255-FR-B241_HD_MASTER.mov`
-
-#### Tape 624 — `Master 2/Tape 624 - Self Contained.mov`
-
-- `FR-B246` → `FR-Masters/Split Discovery Reels - Masters/255-FR-B246_HD_MASTER.mov`
-- `FR-B247` → `FR-Masters/Split Discovery Reels - Masters/255-FR-B247_HD_MASTER.mov`
-- `FR-B499` → `FR-Masters/255-FR-B499_HD_MASTER.mov` (+1 more)
-- `FR-B716` → `FR-Masters/Split Discovery Reels - Masters/255-FR-B716_HD_MASTER.mov`
-- `FR-B835` → `FR-Masters/Split Discovery Reels - Masters/255-FR-B835_HD_MASTER.mov`
-
-#### Tape 625 — `Master 2/Tape 625 - Self Contained.mov`
-
-- `FR-B788` → `FR-Masters/Split Discovery Reels - Masters/255-FR-B788_HD_MASTER.mov`
-- `FR-B855` → `FR-Masters/Split Discovery Reels - Masters/255-FR-B855_HD_MASTER.mov`
-- `FR-B988` → `FR-Masters/255-FR-B988_HD_MASTER.mov` (+1 more)
-- `FR-C477` → `FR-Masters/255-FR-C477_HD_MASTER.mov` (+1 more)
-- `FR-C650` → `FR-Masters/Split Discovery Reels - Masters/255-FR-C650_HD_MASTER.mov`
-
-#### Tape 626 — `Master 3/Tape 626 - Self Contained.mov`
-
-- `FR-C653` → `FR-Masters/Split Discovery Reels - Masters/255-FR-C653_HD_MASTER.mov`
-- `FR-D532` → `FR-Masters/Split Discovery Reels - Masters/255-FR-D532_HD_MASTER.mov`
-- `FR-E332` → `FR-Masters/Split Discovery Reels - Masters/255-FR-E332_HD_MASTER.mov`
-- `FR-E803` → `FR-Masters/255-FR-E803_HD_MASTER.mov` (+1 more)
-- `FR-E805` → `FR-Masters/Split Discovery Reels - Masters/255-FR-E805_HD_MASTER.mov`
-
-#### Tape 629 — `Master 3/Tape 629 - Self Contained.mov`
-
-- `FR-4817` → `FR-Masters/additional_masters_2026-05/255-FR-4817_HD_MASTER.mov`
-- `FR-4834` → `FR-Masters/additional_masters_2026-05/255-FR-4834_HD_MASTER.mov`
-- `FR-4843` → `FR-Masters/additional_masters_2026-05/255-FR-4843_HD_MASTER.mov` (+1 more)
-
-#### Tape 642 — `Master 3/Tape 642 - Self Contained.mov`
-
-- `FR-G067` → `FR-Masters/Split Discovery Reels - Masters/255-FR-G067_HD_MASTER.mov`
-
-#### Tape 650 — `Master 3/Tape 650 - Self Contained.mov`
-
-- `FR-E139` → `FR-Masters/Split Discovery Reels - Masters/255-FR-E139_HD_MASTER.mov`
-- `FR-E787` → `FR-Masters/255-FR-E787_HD_MASTER.mov` (+1 more)
-- `FR-E790` → `FR-Masters/255-FR-E790_HD_MASTER.mov` (+1 more)
-- `FR-E791` → `FR-Masters/Split Discovery Reels - Masters/255-FR-E791_HD_MASTER.mov`
-- `FR-E801` → `FR-Masters/Split Discovery Reels - Masters/255-FR-E801_HD_MASTER.mov`
-- `FR-G154` → `FR-Masters/Split Discovery Reels - Masters/255-FR-G154_HD_MASTER.mov`
-
-#### Tape 651 — `Master 3/Tape 651 - Self Contained.mov`
-
-- `FR-G155` → `FR-Masters/Split Discovery Reels - Masters/255-FR-G155_HD_MASTER.mov`
-- `FR-G156` → `FR-Masters/Split Discovery Reels - Masters/255-FR-G156_HD_MASTER.mov`
-- `FR-G157` → `FR-Masters/Split Discovery Reels - Masters/255-FR-G157_HD_MASTER.mov`
-- `FR-G158` → `FR-Masters/Split Discovery Reels - Masters/255-FR-G158_HD_MASTER.mov`
-- `FR-G159` → `FR-Masters/Split Discovery Reels - Masters/255-FR-G159_HD_MASTER.mov`
-
-#### Tape 652 — `Master 3/Tape 652 - Self Contained.mov`
-
-- `FR-E138` → `FR-Masters/Split Discovery Reels - Masters/255-FR-E138_HD_MASTER.mov`
-- `FR-G029` → `FR-Masters/Split Discovery Reels - Masters/255-FR-G029_HD_MASTER.mov`
-- `FR-G165` → `FR-Masters/Split Discovery Reels - Masters/255-FR-G165_HD_MASTER.mov`
-- `FR-G167` → `FR-Masters/Split Discovery Reels - Masters/255-FR-G167_HD_MASTER.mov`
-- `FR-G169` → `FR-Masters/Split Discovery Reels - Masters/255-FR-G169_HD_MASTER.mov`
-- `FR-G171` → `FR-Masters/255-FR-G171_HD_MASTER.mov` (+1 more)
-
-#### Tape 653 — `Master 3/Tape 653 - Self Contained.mov`
-
-- `FR-C652` → `FR-Masters/Split Discovery Reels - Masters/255-FR-C652_HD_MASTER.mov`
-- `FR-C921` → `FR-Masters/Split Discovery Reels - Masters/255-FR-C921_HD_MASTER.mov`
-- `FR-C922` → `FR-Masters/Split Discovery Reels - Masters/255-FR-C922_HD_MASTER.mov`
-- `FR-C923` → `FR-Masters/Split Discovery Reels - Masters/255-FR-C923_HD_MASTER.mov`
-- `FR-C924` → `FR-Masters/Split Discovery Reels - Masters/255-FR-C924_HD_MASTER.mov`
-- `FR-D803` → `FR-Masters/Split Discovery Reels - Masters/255-FR-D803_HD_MASTER.mov`
-- `FR-E140` → `FR-Masters/Split Discovery Reels - Masters/255-FR-E140_HD_MASTER.mov`
-
-#### Tape 655 — `Master 3/Tape 655 - Self Contained.mov`
-
-- `FR-E785` → `FR-Masters/Split Discovery Reels - Masters/255-FR-E785_HD_MASTER.mov`
-- `FR-E786` → `FR-Masters/Split Discovery Reels - Masters/255-FR-E786_HD_MASTER.mov`
-- `FR-E811` → `FR-Masters/Split Discovery Reels - Masters/255-FR-E811_HD_MASTER.mov`
-- `FR-E957` → `FR-Masters/255-FR-E957_HD_MASTER.mov` (+1 more)
-- `FR-G031` → `FR-Masters/Split Discovery Reels - Masters/255-FR-G031_HD_MASTER.mov`
-
-#### Tape 656 — `Master 3/Tape 656 - Self Contained.mov`
-
-- `FR-G085` → `FR-Masters/Split Discovery Reels - Masters/255-FR-G085_HD_MASTER.mov`
-- `FR-G086` → `FR-Masters/Split Discovery Reels - Masters/255-FR-G086_HD_MASTER.mov`
-- `FR-G150` → `FR-Masters/Split Discovery Reels - Masters/255-FR-G150_HD_MASTER.mov`
-- `FR-G152` → `FR-Masters/Split Discovery Reels - Masters/255-FR-G152_HD_MASTER.mov`
-- `FR-G153` → `FR-Masters/Split Discovery Reels - Masters/255-FR-G153_HD_MASTER.mov`
-
-#### Tape 657 — `Master 3/Tape 657 - Self Contained.mov`
-
-- `FR-G160` → `FR-Masters/Split Discovery Reels - Masters/255-FR-G160_HD_MASTER.mov`
-- `FR-G162` → `FR-Masters/Split Discovery Reels - Masters/255-FR-G162_HD_MASTER.mov`
-- `FR-G163` → `FR-Masters/Split Discovery Reels - Masters/255-FR-G163_HD_MASTER.mov`
-- `FR-G164` → `FR-Masters/Split Discovery Reels - Masters/255-FR-G164_HD_MASTER.mov`
-
-#### Tape 658 — `Master 3/Tape 658 - Self Contained.mov`
-
-- `FR-G166` → `FR-Masters/255-FR-G166_HD_MASTER.mov` (+1 more)
-- `FR-G168` → `FR-Masters/Split Discovery Reels - Masters/255-FR-G168_HD_MASTER.mov`
-- `FR-G170` → `FR-Masters/Split Discovery Reels - Masters/255-FR-G170_HD_MASTER.mov`
-- `FR-G172` → `FR-Masters/Split Discovery Reels - Masters/255-FR-G172_HD_MASTER.mov`
-- `FR-G173` → `FR-Masters/Split Discovery Reels - Masters/255-FR-G173_HD_MASTER.mov`
-
-#### Tape 659 — `Master 3/Tape 659 - Self Contained.mov`
-
-- `FR-G174` → `FR-Masters/Split Discovery Reels - Masters/255-FR-G174_HD_MASTER.mov`
-
-#### Tape 660 — `Master 3/Tape 660 - Self Contained.mov`
-
-- `FR-8258` → `FR-Masters/255-FR-8258_HD_MASTER.mov` (+2 more)
-- `FR-8259` → `FR-Masters/Apollo 13/FR-8259.mov` (+1 more)
-- `FR-8260` → `FR-Masters/Apollo 13/FR-8260.mov` (+1 more)
-- `FR-8261` → `FR-Masters/255-FR-8261_HD_MASTER.mov` (+1 more)
-- `FR-9405` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9405_HD_MASTER.mov`
-- `FR-9469` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9469_HD_MASTER.mov`
-
-#### Tape 661 — `Master 3/Tape 661 - Self Contained.mov`
-
-- `FR-9827` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9827_HD_MASTER.mov`
-- `FR-9833` → `FR-Masters/255-FR-9833_HD_MASTER.mov` (+1 more)
-- `FR-B792` → `FR-Masters/Split Discovery Reels - Masters/255-FR-B792_HD_MASTER.mov`
-- `FR-E357` → `FR-Masters/Split Discovery Reels - Masters/255-FR-E357_HD_MASTER.mov`
-
-#### Tape 662 — `Master 3/Tape 662 - Self Contained.mov`
-
-- `FR-7683` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7683_HD_MASTER.mov`
-- `FR-7686` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7686_HD_MASTER.mov`
-
-#### Tape 664 — `Master 3/Tape 664 - Self Contained.mov`
-
-- `FR-0405` → `FR-Masters/Split Discovery Reels - Masters/255-FR-0405_HD_MASTER.mov`
-- `FR-0429` → `FR-Masters/Split Discovery Reels - Masters/255-FR-0429_HD_MASTER.mov`
-- `FR-0431` → `FR-Masters/Split Discovery Reels - Masters/255-FR-0431_HD_MASTER.mov`
-- `FR-0476` → `FR-Masters/Split Discovery Reels - Masters/255-FR-0476_HD_MASTER.mov`
-- `FR-0502` → `FR-Masters/Split Discovery Reels - Masters/255-FR-0502_HD_MASTER.mov`
-- `FR-0559` → `FR-Masters/255-FR-0559_HD_MASTER.mov` (+1 more)
-
-#### Tape 665 — `Master 3/Tape 665 - Self Contained.mov`
-
-- `FR-0483` → `FR-Masters/Split Discovery Reels - Masters/255-FR-0483_HD_MASTER.mov`
-- `FR-0489` → `FR-Masters/255-FR-0489_HD_MASTER.mov` (+1 more)
-- `FR-0576-2` → `FR-Masters/Split Discovery Reels - Masters/255-FR-0576.2_MASTER.mov`
-- `FR-0875-1` → `FR-Masters/255-FR-0875.1_HD_MASTER.mov` (+1 more)
-- `FR-0918` → `FR-Masters/Split Discovery Reels - Masters/255-FR-0918_HD_MASTER.mov`
-
-#### Tape 667 — `Master 3/Tape 667 - Self Contained.mov`
-
-- `FR-A203` → `FR-Masters/Split Discovery Reels - Masters/255-FR-A203_HD_MASTER.mov`
-- `FR-A214` → `FR-Masters/Split Discovery Reels - Masters/255-FR-A214_HD_MASTER.mov`
-- `FR-A217` → `FR-Masters/Split Discovery Reels - Masters/255-FR-A217_HD_MASTER.mov`
-- `FR-A227` → `FR-Masters/Split Discovery Reels - Masters/255-FR-A227_HD_MASTER.mov`
-- `FR-E739` → `FR-Masters/Split Discovery Reels - Masters/255-FR-E739_HD_MASTER.mov`
-
-#### Tape 671 — `Master 3/Tape 671 - Self Contained.mov`
-
-- `FR-9715` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9715_HD_MASTER.mov`
-- `FR-9804` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9804_HD_MASTER.mov`
-- `FR-A047` → `FR-Masters/Split Discovery Reels - Masters/255-FR-A047_HD_MASTER.mov`
-- `FR-A048` → `FR-Masters/Split Discovery Reels - Masters/255-FR-A048_HD_MASTER.mov`
-- `FR-A341` → `FR-Masters/Split Discovery Reels - Masters/255-FR-A341_HD_MASTER.mov`
-
-#### Tape 672 — `Master 3/Tape 672 - Self Contained.mov`
-
-- `FR-7894` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7894_HD_MASTER.mov`
-- `FR-7898` → `FR-Masters/Split Discovery Reels - Masters/255-FR-7898_HD_MASTER.mov`
-- `FR-8167` → `FR-Masters/Split Discovery Reels - Masters/255-FR-8167_HD_MASTER.mov`
-- `FR-8202` → `FR-Masters/255-FR-8202_HD_MASTER.mov` (+1 more)
-- `FR-8271` → `FR-Masters/Split Discovery Reels - Masters/255-FR-8271_HD_MASTER.mov`
-- `FR-8272` → `FR-Masters/255-FR-8272_HD_MASTER.mov` (+1 more)
-- `FR-8336` → `FR-Masters/Split Discovery Reels - Masters/255-FR-8336_HD_MASTER.mov`
-- `FR-9040` → `FR-Masters/255-FR-9040_HD_MASTER.mov` (+1 more)
-
-#### Tape 673 — `Master 3/Tape 673 - Self Contained.mov`
-
-- `FR-8875` → `FR-Masters/Split Discovery Reels - Masters/255-FR-8875_HD_MASTER.mov`
-- `FR-8919` → `FR-Masters/Split Discovery Reels - Masters/255-FR-8919_HD_MASTER.mov`
-- `FR-8999` → `FR-Masters/Split Discovery Reels - Masters/255-FR-8999_HD_MASTER.mov`
-- `FR-9031` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9031_HD_MASTER.mov`
-- `FR-9032` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9032_HD_MASTER.mov`
-
-#### Tape 674 — `Master 3/Tape 674 - Self Contained.mov`
-
-- `FR-9112` → `FR-Masters/Apollo 16/FR-9112 1080p ProRes 422HQ.mov` (+1 more)
-- `FR-9168` → `FR-Masters/Apollo 16/FR-9168 1080p ProRes 422HQ.mov` (+1 more)
-- `FR-9286` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9286_HD_MASTER.mov`
-- `FR-9449` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9449_HD_MASTER.mov`
-- `FR-9529` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9529_HD_MASTER.mov`
-- `FR-9530` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9530_HD_MASTER.mov`
-- `FR-9531` → `FR-Masters/additional_masters_2026-05/255-FR-9531_HD_MASTER.mov`
-- `FR-9542` → `FR-Masters/additional_masters_2026-05/255-FR-9542_HD_MASTER.mov`
-- `FR-9585` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9585_HD_MASTER.mov`
-
-#### Tape 677 — `Master 3/Tape 677 - Self Contained.mov`
-
-- `FR-E754` → `FR-Masters/Split Discovery Reels - Masters/255-FR-E754_HD_MASTER.mov`
-- `FR-E762` → `FR-Masters/Split Discovery Reels - Masters/255-FR-E762_HD_MASTER.mov`
-- `FR-E788` → `FR-Masters/Split Discovery Reels - Masters/255-FR-E788_HD_MASTER.mov`
-- `FR-E789` → `FR-Masters/Split Discovery Reels - Masters/255-FR-E789_HD_MASTER.mov`
-- `FR-E796` → `FR-Masters/Split Discovery Reels - Masters/255-FR-E796_HD_MASTER.mov`
-
-#### Tape 678 — `Master 3/Tape 678 - Self Contained.mov`
-
-- `FR-E797` → `FR-Masters/Split Discovery Reels - Masters/255-FR-E797_HD_MASTER.mov`
-- `FR-E798` → `FR-Masters/Split Discovery Reels - Masters/255-FR-E798_HD_MASTER.mov`
-- `FR-E799` → `FR-Masters/Split Discovery Reels - Masters/255-FR-E799_HD_MASTER.mov`
-- `FR-E804` → `FR-Masters/Split Discovery Reels - Masters/255-FR-E804_HD_MASTER.mov`
-- `FR-E809` → `FR-Masters/Split Discovery Reels - Masters/255-FR-E809_HD_MASTER.mov`
-- `FR-E815` → `FR-Masters/Split Discovery Reels - Masters/255-FR-E815_HD_MASTER.mov`
-
-#### Tape 685 — `Master 3/Tape 685 - Self Contained.mov`
-
-- `FR-9741` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9741_HD_MASTER.mov`
-- `FR-9742` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9742_HD_MASTER.mov`
-- `FR-9744` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9744_HD_MASTER.mov`
-- `FR-9746` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9746_HD_MASTER.mov`
-- `FR-9749` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9749_HD_MASTER.mov`
-- `FR-9750` → `FR-Masters/255-FR-9750_HD_MASTER.mov` (+1 more)
-- `FR-G179` → `FR-Masters/Split Discovery Reels - Masters/255-FR-G179_HD_MASTER.mov`
-
-#### Tape 686 — `Master 3/Tape 686 - Self Contained.mov`
-
-- `FR-9326` → `FR-Masters/Apollo 16/Apollo 16 MOCR sound added/FR-9326.mov` (+1 more)
-- `FR-9327` → `FR-Masters/Apollo 16/Apollo 16 MOCR sound added/FR-9327.mov` (+1 more)
-- `FR-9341` → `FR-Masters/Apollo 16/Apollo 16 MOCR sound added/FR-9341.mov` (+1 more)
-
-#### Tape 687 — `Master 3/Tape 687 - Self Contained.mov`
-
-- `FR-9342` → `FR-Masters/Apollo 16/Apollo 16 MOCR sound added/FR-9342.mov` (+1 more)
-- `FR-9343` → `FR-Masters/Apollo 16/Apollo 16 MOCR sound added/FR-9343.mov` (+1 more)
-- `FR-9344` → `FR-Masters/Apollo 16/Apollo 16 MOCR sound added/FR-9344.mov` (+1 more)
-- `FR-9347` → `FR-Masters/Apollo 16/Apollo 16 MOCR sound added/FR-9347.mov` (+1 more)
-- `FR-9348` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9348_HD_MASTER.mov`
-- `FR-9559` → `FR-Masters/additional_masters_2026-05/255-FR-9559_HD_MASTER.mov` (+1 more)
-
-#### Tape 688 — `Master 3/Tape 688 - Self Contained.mov`
-
-- `FR-9560` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9560_HD_MASTER.mov`
-- `FR-9561` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9561_HD_MASTER.mov`
-- `FR-9562` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9562_HD_MASTER.mov`
-- `FR-9563` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9563_HD_MASTER.mov`
-- `FR-9565` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9565_HD_MASTER.mov`
-
-#### Tape 689 — `Master 3/Tape 689 - Self Contained.mov`
-
-- `FR-9567` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9567_HD_MASTER.mov`
-- `FR-9569` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9569_HD_MASTER.mov`
-- `FR-9570` → `FR-Masters/Split Discovery Reels - Masters/255-FR-9570_HD_MASTER.mov`
-
-#### Tape 691 — `Master 3/Tape 691 - Self Contained.mov`
-
-- `FR-B464` → `FR-Masters/Split Discovery Reels - Masters/255-FR-B464_HD_MASTER.mov`
-- `FR-B471` → `FR-Masters/Split Discovery Reels - Masters/255-FR-B471_HD_MASTER.mov`
-
-#### Tape 755 — `Master 4/Tape 755 - Self Contained.mov`
-
-- `FR-0598` → `FR-Masters/Split Discovery Reels - Masters/255-FR-0598_HD_MASTER.mov`
+_None._
 
 ## ❌ Keep — Cannot Be Deleted
 
@@ -677,7 +199,6 @@ These tapes are missing one or more expected master files, or contain shotlist c
 | 504 | Master 1 | 3 | 1 | 2 | 2 expected roll(s) have no master file on disk |
 | 505 | Master 1 | 4 | 0 | 4 | 4 expected roll(s) have no master file on disk; 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
 | 506 | Master 1 | 4 | 0 | 4 | 4 expected roll(s) have no master file on disk |
-| 507 | Master 1 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
 | 508 | Master 1 | 8 | 8 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
 | 509 | Master 1 | 5 | 5 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
 | 510 | Master 1 | 5 | 4 | 1 | 1 expected roll(s) have no master file on disk |
@@ -770,8 +291,6 @@ These tapes are missing one or more expected master files, or contain shotlist c
 | 645 | Master 3 | 6 | 0 | 6 | 6 expected roll(s) have no master file on disk |
 | 646 | Master 3 | 4 | 0 | 4 | 4 expected roll(s) have no master file on disk; 2 shotlist row(s) on this tape have a blank identifier (unknown content); 1 non-archive identifier(s) on this tape (e.g. 255-HQA-159) |
 | 647 | Master 3 | 6 | 0 | 6 | 6 expected roll(s) have no master file on disk |
-| 648 | Master 3 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 649 | Master 3 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
 | 654 | Master 3 | 5 | 4 | 1 | 1 expected roll(s) have no master file on disk |
 | 663 | Master 3 | 5 | 5 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
 | 668 | Master 3 | 3 | 3 | 0 | 6 non-archive identifier(s) on this tape (e.g. 803016, 803101, 803104) |
@@ -782,10 +301,7 @@ These tapes are missing one or more expected master files, or contain shotlist c
 | 681 | Master 3 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
 | 682 | Master 3 | 1 | 0 | 1 | 1 expected roll(s) have no master file on disk |
 | 683 | Master 3 | 0 | 0 | 0 | 4 non-archive identifier(s) on this tape (e.g. MSFC E-16, MSFC E-72, MSFC E-77) |
-| 684 | Master 3 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
 | 690 | Master 3 | 0 | 0 | 0 | 1 non-archive identifier(s) on this tape (e.g. 803205) |
-| 692 | Master 3 | 1 | 0 | 1 | 1 expected roll(s) have no master file on disk |
-| 693 | Master 3 | 1 | 0 | 1 | 1 expected roll(s) have no master file on disk |
 | 700 | Master 3 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
 | 701 | Master 3 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
 | 703 | Master 3 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
@@ -794,106 +310,31 @@ These tapes are missing one or more expected master files, or contain shotlist c
 | 706 | Master 3 | 2 | 0 | 2 | 2 expected roll(s) have no master file on disk |
 | 707 | Master 3 | 2 | 0 | 2 | 2 expected roll(s) have no master file on disk |
 | 708 | Master 3 | 0 | 0 | 0 | 1 non-archive identifier(s) on this tape (e.g. 718918) |
-| 709 | Master 3 | 1 | 0 | 1 | 1 expected roll(s) have no master file on disk |
-| 713 | Master 4 | 0 | 0 | 0 | 1 non-archive identifier(s) on this tape (e.g. VJSC1425L) |
-| 714 | Master 4 | 0 | 0 | 0 | 1 non-archive identifier(s) on this tape (e.g. 607009) |
-| 715 | Master 4 | 0 | 0 | 0 | 1 non-archive identifier(s) on this tape (e.g. 608024) |
-| 716 | Master 4 | 0 | 0 | 0 | 1 non-archive identifier(s) on this tape (e.g. 461702) |
-| 717 | Master 4 | 0 | 0 | 0 | 2 non-archive identifier(s) on this tape (e.g. 461804, 461805) |
-| 718 | Master 4 | 0 | 0 | 0 | 1 non-archive identifier(s) on this tape (e.g. 461826) |
-| 719 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 720 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 721 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 722 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 723 | Master 4 | 0 | 0 | 0 | 4 non-archive identifier(s) on this tape (e.g. 0360-1M-S295-35Aa, 06270-4T-W415-I67, 06270-5T-W315-632) |
 | 724 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
 | 725 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 726 | Master 4 | 0 | 0 | 0 | 2 non-archive identifier(s) on this tape (e.g. 461920, 461924) |
-| 727 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 728 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 729 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 731 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 744 | Master 4 | 1 | 0 | 1 | 1 expected roll(s) have no master file on disk |
-| 747 | Master 4 | 1 | 0 | 1 | 1 expected roll(s) have no master file on disk |
-| 748 | Master 4 | 1 | 0 | 1 | 1 expected roll(s) have no master file on disk |
-| 754 | Master 4 | 1 | 0 | 1 | 1 expected roll(s) have no master file on disk |
-| 756 | Master 4 | 0 | 0 | 0 | 3 non-archive identifier(s) on this tape (e.g. 719724, 722439, 732830) |
-| 757 | Master 4 | 0 | 0 | 0 | 2 non-archive identifier(s) on this tape (e.g. 717558, 718299) |
-| 758 | Master 4 | 0 | 0 | 0 | 1 non-archive identifier(s) on this tape (e.g. 720071) |
-| 759 | Master 4 | 0 | 0 | 0 | 3 shotlist row(s) on this tape have a blank identifier (unknown content) |
 | 760 | Master 4 | 0 | 0 | 0 | 1 non-archive identifier(s) on this tape (e.g. 720301) |
 | 761 | Master 4 | 0 | 0 | 0 | 1 non-archive identifier(s) on this tape (e.g. 720069) |
-| 762 | Master 4 | 0 | 0 | 0 | 4 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 763 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
 | 764 | Master 4 | 1 | 0 | 1 | 1 expected roll(s) have no master file on disk |
 | 765 | Master 4 | 1 | 0 | 1 | 1 expected roll(s) have no master file on disk |
 | 766 | Master 4 | 1 | 0 | 1 | 1 expected roll(s) have no master file on disk |
 | 767 | Master 4 | 1 | 0 | 1 | 1 expected roll(s) have no master file on disk |
-| 780 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 781 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 782 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 783 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 786 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 787 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
 | 788 | Master 4 | 1 | 0 | 1 | 1 expected roll(s) have no master file on disk |
 | 789 | Master 4 | 1 | 0 | 1 | 1 expected roll(s) have no master file on disk |
 | 790 | Master 4 | 1 | 0 | 1 | 1 expected roll(s) have no master file on disk |
 | 791 | Master 4 | 1 | 0 | 1 | 1 expected roll(s) have no master file on disk |
 | 792 | Master 4 | 1 | 0 | 1 | 1 expected roll(s) have no master file on disk |
 | 793 | Master 4 | 1 | 0 | 1 | 1 expected roll(s) have no master file on disk |
-| 794 | Master 4 | 1 | 0 | 1 | 1 expected roll(s) have no master file on disk |
 | 795 | Master 4 | 0 | 0 | 0 | 5 non-archive identifier(s) on this tape (e.g. 715916, 715953, 715966) |
 | 796 | Master 4 | 0 | 0 | 0 | 1 non-archive identifier(s) on this tape (e.g. 734456) |
-| 797 | Master 4 | 0 | 0 | 0 | 1 non-archive identifier(s) on this tape (e.g. 734457) |
 | 798 | Master 4 | 0 | 0 | 0 | 1 non-archive identifier(s) on this tape (e.g. 734459) |
-| 799 | Master 4 | 0 | 0 | 0 | 1 non-archive identifier(s) on this tape (e.g. 734458) |
-| 800 | Master 4 | 0 | 0 | 0 | 4 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 801 | Master 4 | 0 | 0 | 0 | 1 non-archive identifier(s) on this tape (e.g. 734460) |
-| 802 | Master 4 | 0 | 0 | 0 | 1 non-archive identifier(s) on this tape (e.g. 718356) |
 | 803 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
 | 804 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
 | 805 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 806 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 808 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
 | 809 | Master 4 | 0 | 0 | 0 | 5 non-archive identifier(s) on this tape (e.g. 117687, 117752, 117761) |
 | 810 | Master 4 | 0 | 0 | 0 | 1 non-archive identifier(s) on this tape (e.g. 117712) |
-| 813 | Master 4 | 1 | 0 | 1 | 1 expected roll(s) have no master file on disk |
-| 814 | Master 4 | 1 | 0 | 1 | 1 expected roll(s) have no master file on disk |
 | 815 | Master 4 | 1 | 0 | 1 | 1 expected roll(s) have no master file on disk |
-| 816 | Master 4 | 1 | 0 | 1 | 1 expected roll(s) have no master file on disk |
-| 817 | Master 4 | 1 | 0 | 1 | 1 expected roll(s) have no master file on disk |
-| 818 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
 | 819 | Master 4 | 1 | 0 | 1 | 1 expected roll(s) have no master file on disk; 1 non-archive identifier(s) on this tape (e.g. JSC1374D) |
 | 823 | Master 4 | 1 | 0 | 1 | 1 expected roll(s) have no master file on disk |
-| 828 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 832 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 833 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 835 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 837 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 839 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 840 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 845 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 847 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 850 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 859 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 860 | Master 4 | 1 | 0 | 1 | 1 expected roll(s) have no master file on disk |
-| 861 | Master 4 | 1 | 0 | 1 | 1 expected roll(s) have no master file on disk |
-| 862 | Master 4 | 1 | 0 | 1 | 1 expected roll(s) have no master file on disk |
-| 864 | Master 4 | 1 | 0 | 1 | 1 expected roll(s) have no master file on disk |
-| 867 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 873 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 874 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 875 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 876 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 877 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 878 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 879 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 880 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 882 | Master 4 | 0 | 0 | 0 | 4 non-archive identifier(s) on this tape (e.g. 502373, 506620, 715807) |
-| 883 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 884 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 885 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
-| 886 | Master 4 | 0 | 0 | 0 | 1 shotlist row(s) on this tape have a blank identifier (unknown content) |
 
 ### Detail per kept tape
 
@@ -944,11 +385,6 @@ These tapes are missing one or more expected master files, or contain shotlist c
   - `JSC-0097`
   - `JSC-0277`
   - `JSC-0326`
-
-#### Tape 507 — `Master 1/Tape 507 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
 
 #### Tape 508 — `Master 1/Tape 508 - Self Contained.mov`
 
@@ -1574,16 +1010,6 @@ These tapes are missing one or more expected master files, or contain shotlist c
   - `S-5411`
   - `S-5510`
 
-#### Tape 648 — `Master 3/Tape 648 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 649 — `Master 3/Tape 649 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
 #### Tape 654 — `Master 3/Tape 654 - Self Contained.mov`
 
 - Expected rolls: **5**, on disk: **4**, missing: **1**
@@ -1639,27 +1065,10 @@ These tapes are missing one or more expected master files, or contain shotlist c
 - Expected rolls: **0**, on disk: **0**, missing: **0**
 - Non-archive identifiers on this tape: `MSFC E-16`, `MSFC E-72`, `MSFC E-77`, `MSFC E-8`
 
-#### Tape 684 — `Master 3/Tape 684 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
 #### Tape 690 — `Master 3/Tape 690 - Self Contained.mov`
 
 - Expected rolls: **0**, on disk: **0**, missing: **0**
 - Non-archive identifiers on this tape: `803205`
-
-#### Tape 692 — `Master 3/Tape 692 - Self Contained.mov`
-
-- Expected rolls: **1**, on disk: **0**, missing: **1**
-- Missing rolls (1):
-  - `JSC-2088`
-
-#### Tape 693 — `Master 3/Tape 693 - Self Contained.mov`
-
-- Expected rolls: **1**, on disk: **0**, missing: **1**
-- Missing rolls (1):
-  - `CL-1525`
 
 #### Tape 700 — `Master 3/Tape 700 - Self Contained.mov`
 
@@ -1712,67 +1121,6 @@ These tapes are missing one or more expected master files, or contain shotlist c
 - Expected rolls: **0**, on disk: **0**, missing: **0**
 - Non-archive identifiers on this tape: `718918`
 
-#### Tape 709 — `Master 3/Tape 709 - Self Contained.mov`
-
-- Expected rolls: **1**, on disk: **0**, missing: **1**
-- Missing rolls (1):
-  - `VJSC-960`
-
-#### Tape 713 — `Master 4/Tape 713 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Non-archive identifiers on this tape: `VJSC1425L`
-
-#### Tape 714 — `Master 4/Tape 714 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Non-archive identifiers on this tape: `607009`
-
-#### Tape 715 — `Master 4/Tape 715 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Non-archive identifiers on this tape: `608024`
-
-#### Tape 716 — `Master 4/Tape 716 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Non-archive identifiers on this tape: `461702`
-
-#### Tape 717 — `Master 4/Tape 717 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Non-archive identifiers on this tape: `461804`, `461805`
-
-#### Tape 718 — `Master 4/Tape 718 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Non-archive identifiers on this tape: `461826`
-
-#### Tape 719 — `Master 4/Tape 719 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 720 — `Master 4/Tape 720 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 721 — `Master 4/Tape 721 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 722 — `Master 4/Tape 722 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 723 — `Master 4/Tape 723 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Non-archive identifiers on this tape: `0360-1M-S295-35Aa`, `06270-4T-W415-I67`, `06270-5T-W315-632`, `0660-2T-S647-237b&c`
-
 #### Tape 724 — `Master 4/Tape 724 - Self Contained.mov`
 
 - Expected rolls: **0**, on disk: **0**, missing: **0**
@@ -1783,75 +1131,6 @@ These tapes are missing one or more expected master files, or contain shotlist c
 - Expected rolls: **0**, on disk: **0**, missing: **0**
 - Shotlist rows with blank identifier: 1 (unknown content on this tape)
 
-#### Tape 726 — `Master 4/Tape 726 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Non-archive identifiers on this tape: `461920`, `461924`
-
-#### Tape 727 — `Master 4/Tape 727 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 728 — `Master 4/Tape 728 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 729 — `Master 4/Tape 729 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 731 — `Master 4/Tape 731 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 744 — `Master 4/Tape 744 - Self Contained.mov`
-
-- Expected rolls: **1**, on disk: **0**, missing: **1**
-- Missing rolls (1):
-  - `JSC-1962`
-
-#### Tape 747 — `Master 4/Tape 747 - Self Contained.mov`
-
-- Expected rolls: **1**, on disk: **0**, missing: **1**
-- Missing rolls (1):
-  - `JSC-1969`
-
-#### Tape 748 — `Master 4/Tape 748 - Self Contained.mov`
-
-- Expected rolls: **1**, on disk: **0**, missing: **1**
-- Missing rolls (1):
-  - `CMP-662`
-
-#### Tape 754 — `Master 4/Tape 754 - Self Contained.mov`
-
-- Expected rolls: **1**, on disk: **0**, missing: **1**
-- Missing rolls (1):
-  - `FR-0596`
-
-#### Tape 756 — `Master 4/Tape 756 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Non-archive identifiers on this tape: `719724`, `722439`, `732830`
-
-#### Tape 757 — `Master 4/Tape 757 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Non-archive identifiers on this tape: `717558`, `718299`
-
-#### Tape 758 — `Master 4/Tape 758 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Non-archive identifiers on this tape: `720071`
-
-#### Tape 759 — `Master 4/Tape 759 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 3 (unknown content on this tape)
-
 #### Tape 760 — `Master 4/Tape 760 - Self Contained.mov`
 
 - Expected rolls: **0**, on disk: **0**, missing: **0**
@@ -1861,16 +1140,6 @@ These tapes are missing one or more expected master files, or contain shotlist c
 
 - Expected rolls: **0**, on disk: **0**, missing: **0**
 - Non-archive identifiers on this tape: `720069`
-
-#### Tape 762 — `Master 4/Tape 762 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 4 (unknown content on this tape)
-
-#### Tape 763 — `Master 4/Tape 763 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
 
 #### Tape 764 — `Master 4/Tape 764 - Self Contained.mov`
 
@@ -1895,36 +1164,6 @@ These tapes are missing one or more expected master files, or contain shotlist c
 - Expected rolls: **1**, on disk: **0**, missing: **1**
 - Missing rolls (1):
   - `JSC-1501`
-
-#### Tape 780 — `Master 4/Tape 780 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 781 — `Master 4/Tape 781 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 782 — `Master 4/Tape 782 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 783 — `Master 4/Tape 783 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 786 — `Master 4/Tape 786 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 787 — `Master 4/Tape 787 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
 
 #### Tape 788 — `Master 4/Tape 788 - Self Contained.mov`
 
@@ -1962,12 +1201,6 @@ These tapes are missing one or more expected master files, or contain shotlist c
 - Missing rolls (1):
   - `JSC-1916`
 
-#### Tape 794 — `Master 4/Tape 794 - Self Contained.mov`
-
-- Expected rolls: **1**, on disk: **0**, missing: **1**
-- Missing rolls (1):
-  - `JSC-1916`
-
 #### Tape 795 — `Master 4/Tape 795 - Self Contained.mov`
 
 - Expected rolls: **0**, on disk: **0**, missing: **0**
@@ -1978,35 +1211,10 @@ These tapes are missing one or more expected master files, or contain shotlist c
 - Expected rolls: **0**, on disk: **0**, missing: **0**
 - Non-archive identifiers on this tape: `734456`
 
-#### Tape 797 — `Master 4/Tape 797 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Non-archive identifiers on this tape: `734457`
-
 #### Tape 798 — `Master 4/Tape 798 - Self Contained.mov`
 
 - Expected rolls: **0**, on disk: **0**, missing: **0**
 - Non-archive identifiers on this tape: `734459`
-
-#### Tape 799 — `Master 4/Tape 799 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Non-archive identifiers on this tape: `734458`
-
-#### Tape 800 — `Master 4/Tape 800 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 4 (unknown content on this tape)
-
-#### Tape 801 — `Master 4/Tape 801 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Non-archive identifiers on this tape: `734460`
-
-#### Tape 802 — `Master 4/Tape 802 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Non-archive identifiers on this tape: `718356`
 
 #### Tape 803 — `Master 4/Tape 803 - Self Contained.mov`
 
@@ -2023,16 +1231,6 @@ These tapes are missing one or more expected master files, or contain shotlist c
 - Expected rolls: **0**, on disk: **0**, missing: **0**
 - Shotlist rows with blank identifier: 1 (unknown content on this tape)
 
-#### Tape 806 — `Master 4/Tape 806 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 808 — `Master 4/Tape 808 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
 #### Tape 809 — `Master 4/Tape 809 - Self Contained.mov`
 
 - Expected rolls: **0**, on disk: **0**, missing: **0**
@@ -2043,40 +1241,11 @@ These tapes are missing one or more expected master files, or contain shotlist c
 - Expected rolls: **0**, on disk: **0**, missing: **0**
 - Non-archive identifiers on this tape: `117712`
 
-#### Tape 813 — `Master 4/Tape 813 - Self Contained.mov`
-
-- Expected rolls: **1**, on disk: **0**, missing: **1**
-- Missing rolls (1):
-  - `FR-G94-001`
-
-#### Tape 814 — `Master 4/Tape 814 - Self Contained.mov`
-
-- Expected rolls: **1**, on disk: **0**, missing: **1**
-- Missing rolls (1):
-  - `FR-G90-001`
-
 #### Tape 815 — `Master 4/Tape 815 - Self Contained.mov`
 
 - Expected rolls: **1**, on disk: **0**, missing: **1**
 - Missing rolls (1):
   - `FR-G90-006`
-
-#### Tape 816 — `Master 4/Tape 816 - Self Contained.mov`
-
-- Expected rolls: **1**, on disk: **0**, missing: **1**
-- Missing rolls (1):
-  - `FR-G90-012`
-
-#### Tape 817 — `Master 4/Tape 817 - Self Contained.mov`
-
-- Expected rolls: **1**, on disk: **0**, missing: **1**
-- Missing rolls (1):
-  - `FR-G89-003`
-
-#### Tape 818 — `Master 4/Tape 818 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
 
 #### Tape 819 — `Master 4/Tape 819 - Self Contained.mov`
 
@@ -2090,155 +1259,6 @@ These tapes are missing one or more expected master files, or contain shotlist c
 - Expected rolls: **1**, on disk: **0**, missing: **1**
 - Missing rolls (1):
   - `JSC-1906`
-
-#### Tape 828 — `Master 4/Tape 828 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 832 — `Master 4/Tape 832 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 833 — `Master 4/Tape 833 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 835 — `Master 4/Tape 835 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 837 — `Master 4/Tape 837 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 839 — `Master 4/Tape 839 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 840 — `Master 4/Tape 840 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 845 — `Master 4/Tape 845 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 847 — `Master 4/Tape 847 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 850 — `Master 4/Tape 850 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 859 — `Master 4/Tape 859 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 860 — `Master 4/Tape 860 - Self Contained.mov`
-
-- Expected rolls: **1**, on disk: **0**, missing: **1**
-- Missing rolls (1):
-  - `JSC-1625`
-
-#### Tape 861 — `Master 4/Tape 861 - Self Contained.mov`
-
-- Expected rolls: **1**, on disk: **0**, missing: **1**
-- Missing rolls (1):
-  - `JSC-1648`
-
-#### Tape 862 — `Master 4/Tape 862 - Self Contained.mov`
-
-- Expected rolls: **1**, on disk: **0**, missing: **1**
-- Missing rolls (1):
-  - `JSC-1832`
-
-#### Tape 864 — `Master 4/Tape 864 - Self Contained.mov`
-
-- Expected rolls: **1**, on disk: **0**, missing: **1**
-- Missing rolls (1):
-  - `JSC-1660`
-
-#### Tape 867 — `Master 4/Tape 867 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 873 — `Master 4/Tape 873 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 874 — `Master 4/Tape 874 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 875 — `Master 4/Tape 875 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 876 — `Master 4/Tape 876 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 877 — `Master 4/Tape 877 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 878 — `Master 4/Tape 878 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 879 — `Master 4/Tape 879 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 880 — `Master 4/Tape 880 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 882 — `Master 4/Tape 882 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Non-archive identifiers on this tape: `502373`, `506620`, `715807`, `715996`
-
-#### Tape 883 — `Master 4/Tape 883 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 884 — `Master 4/Tape 884 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 885 — `Master 4/Tape 885 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
-
-#### Tape 886 — `Master 4/Tape 886 - Self Contained.mov`
-
-- Expected rolls: **0**, on disk: **0**, missing: **0**
-- Shotlist rows with blank identifier: 1 (unknown content on this tape)
 
 ## Unparseable Master Filenames
 

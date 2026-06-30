@@ -34,7 +34,7 @@ else
   SCP_BIN="scp"
 fi
 
-DB="database/catalog.db"
+DB="../database/catalog.db"
 
 if [ ! -f "$DB" ]; then
   echo "ERROR: $DB not found. Run this from the repo root." >&2

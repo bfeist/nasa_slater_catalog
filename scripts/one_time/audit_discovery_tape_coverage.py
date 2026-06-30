@@ -18,24 +18,32 @@ Logic:
        individual master file somewhere on disk. Otherwise it is KEEP and the
        reasons are listed (missing rolls, non-archive identifiers, etc.).
 
-Output: docs/discovery-tape-deletion-audit.md
+Output: ../../docs/discovery-tape-deletion-audit.md
 
-This script is READ-ONLY against /o/. It only lists files; it never writes,
-moves, or deletes anything.
+By default, this script is READ-ONLY against /o/. It only lists files.
+With --move-removable, it moves tapes marked for deletion to the specified
+directory.
 
 Usage:
+    # Generate report only (read-only)
     uv run python scripts/one_time/audit_discovery_tape_coverage.py
+    
+    # Generate report and move removable tapes
+    uv run python scripts/one_time/audit_discovery_tape_coverage.py \\
+        --move-removable D:\\stephen\\discovery_tapes_to_delete
 """
 from __future__ import annotations
 
+import argparse
 import os
 import re
+import shutil
 import sqlite3
 from collections import defaultdict
 from pathlib import Path
 
-DB_PATH = "database/catalog.db"
-OUTPUT_MD = "docs/discovery-tape-deletion-audit.md"
+DB_PATH = "../../database/catalog.db"
+OUTPUT_MD = "../../docs/discovery-tape-deletion-audit.md"
 
 # Roots to recursively scan for individual per-roll master files.
 # The Discovery compilation tapes themselves live in Master 1..4 — those are
@@ -368,8 +376,14 @@ def audit(db: sqlite3.Connection) -> dict:
     tapes = expected_rolls_per_tape(db)
     safe_to_delete: list[dict] = []
     keep: list[dict] = []
+    already_removed: list[dict] = []
 
     for tape in sorted(tapes):
+        folder = tape_folder(tape)
+        filename = tape_filename(tape)
+        tape_path = f"O:/{folder}/{filename}"
+        tape_on_disk = os.path.exists(tape_path)
+
         d = tapes[tape]
         expected = sorted(d["fr_rolls"])
         present_map: dict[str, list[tuple[str, str]]] = {}
@@ -380,6 +394,19 @@ def audit(db: sqlite3.Connection) -> dict:
                 present_map[r] = files
             else:
                 missing.append(r)
+
+        # Tape file no longer present on disk — already removed.
+        if not tape_on_disk:
+            already_removed.append({
+                "tape": tape,
+                "expected_count": len(expected),
+                "present_count": len(present_map),
+                "present_map": present_map,
+                "missing": missing,
+                "blank_rows": d["blank_rows"],
+                "unparseable": sorted(set(d["unparseable"])),
+            })
+            continue
 
         reasons: list[str] = []
         if missing:
@@ -419,6 +446,7 @@ def audit(db: sqlite3.Connection) -> dict:
         "unparseable": unparseable_files,
         "safe_to_delete": safe_to_delete,
         "keep": keep,
+        "already_removed": already_removed,
     }
 
 
@@ -449,7 +477,8 @@ def _short_root(root: str) -> str:
 def write_report(result: dict, path: str) -> None:
     safe = result["safe_to_delete"]
     keep = result["keep"]
-    total = len(safe) + len(keep)
+    removed = result["already_removed"]
+    total = len(safe) + len(keep) + len(removed)
     distinct_idents = len(result["by_ident"])
 
     lines: list[str] = []
@@ -472,6 +501,7 @@ def write_report(result: dict, path: str) -> None:
 
     lines.append("## Summary\n")
     lines.append(f"- Total Discovery tapes catalogued: **{total}**")
+    lines.append(f"- **Already removed (file no longer on disk):** {len(removed)}")
     lines.append(f"- **Safe to delete:** {len(safe)}")
     lines.append(f"- **Keep (incomplete coverage or unknown content):** {len(keep)}")
     lines.append(
@@ -502,6 +532,24 @@ def write_report(result: dict, path: str) -> None:
         "blank/unparseable shotlist rows that would imply unknown content was "
         "on that tape.\n"
     )
+
+    # ---- Already removed ----
+    lines.append("## 🗑️ Already Removed\n")
+    if not removed:
+        lines.append("_None._\n")
+    else:
+        lines.append(
+            "These tape files are no longer present at their expected path on "
+            "`O:/Master 1..4` — they have already been moved or deleted. "
+            "Their roll coverage is shown for reference.\n"
+        )
+        lines.append("| Tape | Folder | Rolls covered |")
+        lines.append("|-----:|:-------|-------------:|")
+        for r in removed:
+            lines.append(
+                f"| {r['tape']} | {tape_folder(r['tape'])} | {r['present_count']} |"
+            )
+        lines.append("")
 
     # ---- Safe to delete ----
     lines.append("## ✅ Safe to Delete\n")
@@ -599,10 +647,61 @@ def write_report(result: dict, path: str) -> None:
 
 
 # ---------------------------------------------------------------------------
+# File operations
+# ---------------------------------------------------------------------------
+
+def move_removable_tapes(safe_to_delete: list[dict], dest_dir: str) -> None:
+    """Move Discovery tapes marked for deletion to the specified directory."""
+    dest_path = Path(dest_dir)
+    dest_path.mkdir(parents=True, exist_ok=True)
+    
+    print(f"\nMoving {len(safe_to_delete)} removable tapes to: {dest_dir}")
+    moved_count = 0
+    skipped_count = 0
+    
+    for record in safe_to_delete:
+        tape = record["tape"]
+        folder = tape_folder(tape)
+        filename = tape_filename(tape)
+        source = Path(f"O:/{folder}/{filename}")
+        dest = dest_path / filename
+        
+        if not source.exists():
+            print(f"  ⚠ Source not found, skipping: {source}")
+            skipped_count += 1
+            continue
+        
+        if dest.exists():
+            print(f"  ⚠ Destination exists, skipping: {filename}")
+            skipped_count += 1
+            continue
+        
+        try:
+            print(f"  Moving: {filename} ({folder})")
+            shutil.move(str(source), str(dest))
+            moved_count += 1
+        except Exception as e:
+            print(f"  ✗ Failed to move {filename}: {e}")
+            skipped_count += 1
+    
+    print(f"\n  Moved: {moved_count}, Skipped: {skipped_count}")
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
 def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Audit Discovery tape coverage and optionally move removable tapes."
+    )
+    parser.add_argument(
+        "--move-removable",
+        metavar="DIR",
+        help="Move tapes marked for deletion to the specified directory"
+    )
+    args = parser.parse_args()
+    
     if not os.path.exists(DB_PATH):
         raise SystemExit(f"Database not found: {DB_PATH}")
 
@@ -614,13 +713,22 @@ def main() -> None:
 
     safe = result["safe_to_delete"]
     keep = result["keep"]
+    removed = result["already_removed"]
     print(f"\n  distinct identifiers found:    {len(result['by_ident']):>6,d}")
     print(f"  unparseable filenames:         {len(result['unparseable']):>6,d}")
+    print(f"  tapes already removed:         {len(removed):>6,d}")
     print(f"  tapes safe to delete:          {len(safe):>6,d}")
     print(f"  tapes to keep:                 {len(keep):>6,d}")
 
     write_report(result, OUTPUT_MD)
     print(f"\nReport written to: {OUTPUT_MD}")
+    
+    if args.move_removable:
+        if not safe:
+            print("\nNo tapes to move (none marked as safe to delete).")
+        else:
+            # Exclude any that were already removed between the last audit and now.
+            move_removable_tapes(safe, args.move_removable)
 
 
 if __name__ == "__main__":
