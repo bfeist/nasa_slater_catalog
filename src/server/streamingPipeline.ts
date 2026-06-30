@@ -191,8 +191,7 @@ export function streamFile(
 ): StreamFailure | null {
   const d = getDb();
   const file = d.prepare("SELECT * FROM files_on_disk WHERE id = ?").get(opts.fileId) as
-    | { folder_root: string; rel_path: string }
-    | undefined;
+    { folder_root: string; rel_path: string } | undefined;
   if (!file) {
     return { status: 404, message: "File not found" };
   }
@@ -205,8 +204,7 @@ export function streamFile(
   }
 
   const probe = d.prepare("SELECT * FROM ffprobe_metadata WHERE file_id = ?").get(opts.fileId) as
-    | { video_codec?: string; video_frame_rate?: string; probe_json?: string }
-    | undefined;
+    { video_codec?: string; video_frame_rate?: string; probe_json?: string } | undefined;
 
   const startSecs = opts.startSecs || 0;
   const isNaraProxy = path.normalize(fullPath).toLowerCase().startsWith(NARA_PROXY_ROOT);
