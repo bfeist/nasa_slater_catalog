@@ -31,7 +31,7 @@ else
   SCP_BIN="scp"
 fi
 
-AUTH="auth.config.json"
+AUTH="../auth.config.json"
 
 if [ ! -f "$AUTH" ]; then
   echo "ERROR: $AUTH not found. Run this from the repo root." >&2

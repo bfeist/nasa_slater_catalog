@@ -620,8 +620,7 @@ router.get("/:identifier", (req, res) => {
   const identifier = resolveIdentifier(rawParam) ?? rawParam;
 
   const reel = d.prepare("SELECT * FROM film_rolls WHERE identifier = ?").get(identifier) as
-    | Record<string, unknown>
-    | undefined;
+    Record<string, unknown> | undefined;
   if (!reel) {
     res.status(404).json({ error: "Reel not found" });
     return;

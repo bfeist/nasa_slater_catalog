@@ -20,8 +20,7 @@ router.get("/:file_id/info", (req, res) => {
   const d = getDb();
   const fileId = parseInt(req.params.file_id, 10);
   const file = d.prepare("SELECT * FROM files_on_disk WHERE id = ?").get(fileId) as
-    | Record<string, unknown>
-    | undefined;
+    Record<string, unknown> | undefined;
   if (!file) {
     res.status(404).json({ error: "File not found" });
     return;
